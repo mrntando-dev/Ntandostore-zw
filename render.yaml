@@ -9,3 +9,12 @@ services:
         value: 3.11.0
       - key: SECRET_KEY
         generateValue: true
+      - key: DATABASE_URL
+        fromDatabase:
+          name: ntandostore-db
+          property: connectionString
+
+databases:
+  - name: ntando
+    databaseName: ntandostore
+    user: ntando_user
