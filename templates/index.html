@@ -6,8 +6,19 @@
     <title>Ntandostore - Your Complete Business Solution</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
+    <!-- Background Music Player -->
+    <div class="music-player" id="musicPlayer">
+        <audio id="bgMusic" loop>
+            <source src="{{ url_for('static', filename='audio/background.mp3') }}" type="audio/mpeg">
+        </audio>
+        <button id="musicToggle" class="music-toggle" aria-label="Toggle Music">
+            <i class="fas fa-volume-up"></i>
+        </button>
+    </div>
+
     <header>
         <nav class="navbar">
             <div class="container">
@@ -22,8 +33,15 @@
                     <li><a href="{{ url_for('index') }}">Home</a></li>
                     <li><a href="{{ url_for('services') }}">Services</a></li>
                     <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
+                    <li><a href="{{ url_for('testimonials') }}">Testimonials</a></li>
+                    <li><a href="{{ url_for('faq') }}">FAQ</a></li>
                     <li><a href="#contact">Contact</a></li>
                 </ul>
+                <div class="mobile-menu-toggle" id="mobileMenuToggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
         </nav>
     </header>
@@ -32,7 +50,25 @@
         <div class="container">
             <h1 class="hero-title">Your Complete Business Solution</h1>
             <p class="hero-subtitle">From domains to designs, we've got everything your business needs</p>
-            <a href="{{ url_for('services') }}" class="btn btn-primary">Explore Services</a>
+            <div class="hero-buttons">
+                <a href="{{ url_for('services') }}" class="btn btn-primary">Explore Services</a>
+                <a href="#contact" class="btn btn-outline">Get Quote</a>
+            </div>
+            <!-- Trust Indicators -->
+            <div class="trust-badges">
+                <div class="badge">
+                    <i class="fas fa-users"></i>
+                    <span>500+ Happy Clients</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-project-diagram"></i>
+                    <span>1000+ Projects Completed</span>
+                </div>
+                <div class="badge">
+                    <i class="fas fa-clock"></i>
+                    <span>24/7 Support</span>
+                </div>
+            </div>
         </div>
     </section>
 
@@ -41,6 +77,7 @@
             {% for category, message in messages %}
             <div class="alert alert-{{ category }}">
                 {{ message }}
+                <button class="alert-close">×</button>
             </div>
             {% endfor %}
         {% endif %}
@@ -49,6 +86,7 @@
     <section class="services-preview">
         <div class="container">
             <h2 class="section-title">Our Services</h2>
+            <p class="section-subtitle">Comprehensive digital solutions tailored to your business needs</p>
             <div class="services-grid">
                 {% for service_id, service in services.items() %}
                 <div class="service-card">
@@ -74,6 +112,10 @@
                     <h3>{{ service.name }}</h3>
                     <p>{{ service.description }}</p>
                     <p class="price">${{ "%.2f"|format(service.price) }}</p>
+                    <div class="service-features">
+                        <span class="feature-tag"><i class="fas fa-check"></i> Fast Delivery</span>
+                        <span class="feature-tag"><i class="fas fa-check"></i> Quality Assured</span>
+                    </div>
                     <a href="{{ url_for('order', service_id=service_id) }}" class="btn btn-secondary">Order Now</a>
                 </div>
                 {% endfor %}
@@ -109,23 +151,190 @@
         </div>
     </section>
 
+    <!-- Newsletter Subscription -->
+    <section class="newsletter">
+        <div class="container">
+            <div class="newsletter-content">
+                <h2>Stay Updated</h2>
+                <p>Subscribe to our newsletter for exclusive offers and updates</p>
+                <form action="{{ url_for('subscribe') }}" method="POST" class="newsletter-form">
+                    <input type="email" name="email" placeholder="Enter your email" required>
+                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terms and Conditions Section -->
+    <section class="terms-conditions">
+        <div class="container">
+            <h2 class="section-title">Terms & Conditions</h2>
+            <div class="terms-content">
+                <div class="terms-box">
+                    <h3><i class="fas fa-file-contract"></i> Service Agreement</h3>
+                    <ul>
+                        <li><strong>Payment:</strong> Full payment required before project commencement unless otherwise agreed.</li>
+                        <li><strong>Delivery:</strong> Estimated delivery times are provided in good faith. Delays due to client feedback or external factors may extend timelines.</li>
+                        <li><strong>Revisions:</strong> Each service includes specified revisions. Additional revisions may incur extra charges.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-shield-alt"></i> Refund & Cancellation Policy</h3>
+                    <ul>
+                        <li><strong>Refunds:</strong> Available within 48 hours of order placement if work has not commenced.</li>
+                        <li><strong>Cancellation:</strong> Once project begins, cancellation fee of 30% applies.</li>
+                        <li><strong>Satisfaction Guarantee:</strong> We work with you until you're satisfied within agreed revision limits.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-copyright"></i> Intellectual Property</h3>
+                    <ul>
+                        <li><strong>Ownership:</strong> Upon full payment, client owns all deliverables.</li>
+                        <li><strong>Portfolio Rights:</strong> Ntandostore reserves the right to showcase completed work in portfolio.</li>
+                        <li><strong>Confidentiality:</strong> All client information is kept strictly confidential.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-user-shield"></i> Client Responsibilities</h3>
+                    <ul>
+                        <li><strong>Content:</strong> Client must provide accurate content, images, and information.</li>
+                        <li><strong>Feedback:</strong> Timely feedback required to maintain project timeline.</li>
+                        <li><strong>Hosting/Domain:</strong> Client responsible for annual renewal fees for domains and hosting.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-hands-helping"></i> Support & Maintenance</h3>
+                    <ul>
+                        <li><strong>Warranty:</strong> 30-day bug-fix warranty on all custom development.</li>
+                        <li><strong>Support:</strong> Free email support for 30 days post-delivery.</li>
+                        <li><strong>Updates:</strong> Ongoing maintenance packages available separately.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Limitation of Liability</h3>
+                    <ul>
+                        <li>Ntandostore is not liable for any indirect, incidental, or consequential damages.</li>
+                        <li>Third-party service interruptions (hosting, domains) are beyond our control.</li>
+                        <li>Client responsible for backing up their own data and content.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-gavel"></i> Dispute Resolution</h3>
+                    <ul>
+                        <li>Good faith negotiations will be attempted for any disputes.</li>
+                        <li>Disputes will be governed by the laws of Zimbabwe.</li>
+                        <li>Communication records via WhatsApp and email serve as proof of agreement.</li>
+                    </ul>
+                </div>
+
+                <div class="terms-box">
+                    <h3><i class="fas fa-sync-alt"></i> Changes to Terms</h3>
+                    <ul>
+                        <li>Ntandostore reserves the right to update these terms at any time.</li>
+                        <li>Clients will be notified of significant changes via email.</li>
+                        <li>Continued use of services constitutes acceptance of updated terms.</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="terms-footer">
+                <p><strong>Last Updated:</strong> November 2024</p>
+                <p>By placing an order, you acknowledge that you have read, understood, and agree to these Terms & Conditions.</p>
+                <a href="{{ url_for('terms_pdf') }}" class="btn btn-outline" download>
+                    <i class="fas fa-download"></i> Download Terms (PDF)
+                </a>
+            </div>
+        </div>
+    </section>
+
     <section id="contact" class="contact">
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
-            <div class="contact-info">
-                <div class="contact-item">
-                    <h3>📧 Email</h3>
-                    <p>infontandostore@no.vsmailpro.com<br>
-                    Ntandostore@no.vsmailpro.com<br>
-                    Modder@no.vsmailpro.com</p>
+            <p class="section-subtitle">Ready to start your project? We're here to help!</p>
+            
+            <!-- Contact Form -->
+            <div class="contact-wrapper">
+                <div class="contact-form-container">
+                    <form action="{{ url_for('contact_submit') }}" method="POST" class="contact-form">
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <select name="service" required>
+                                <option value="">Select a Service</option>
+                                {% for service_id, service in services.items() %}
+                                <option value="{{ service_id }}">{{ service.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="message" rows="5" placeholder="Tell us about your project..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
                 </div>
-                <div class="contact-item">
-                    <h3>📱 WhatsApp</h3>
-                    <p>+263 71 845 6744</p>
+
+                <div class="contact-info">
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h3>Email</h3>
+                        <p>
+                            <a href="mailto:infontandostore@no.vsmailpro.com">infontandostore@no.vsmailpro.com</a><br>
+                            <a href="mailto:Ntandostore@no.vsmailpro.com">Ntandostore@no.vsmailpro.com</a><br>
+                            <a href="mailto:Modder@no.vsmailpro.com">Modder@no.vsmailpro.com</a>
+                        </p>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <h3>WhatsApp</h3>
+                        <p><a href="https://wa.me/263718456744" target="_blank">+263 71 845 6744</a></p>
+                        <a href="https://wa.me/263718456744" class="btn btn-whatsapp" target="_blank">
+                            <i class="fab fa-whatsapp"></i> Chat on WhatsApp
+                        </a>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-credit-card"></i>
+                        </div>
+                        <h3>Payment</h3>
+                        <p>EcoCash/Innbucks: +263 78 683 1091</p>
+                        <div class="payment-methods">
+                            <span class="payment-badge">EcoCash</span>
+                            <span class="payment-badge">Innbucks</span>
+                        </div>
+                    </div>
+                    <div class="contact-item">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h3>Business Hours</h3>
+                        <p>Monday - Friday: 8:00 AM - 6:00 PM<br>
+                        Saturday: 9:00 AM - 4:00 PM<br>
+                        Sunday: Closed</p>
+                    </div>
                 </div>
-                <div class="contact-item">
-                    <h3>💳 Payment</h3>
-                    <p>EcoCash/Innbucks: +263 78 683 1091</p>
+            </div>
+
+            <!-- Social Media Links -->
+            <div class="social-links">
+                <h3>Follow Us</h3>
+                <div class="social-icons">
+                    <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
+                    <a href="#" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                    <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
                 </div>
             </div>
         </div>
@@ -133,10 +342,117 @@
 
     <footer>
         <div class="container">
-            <p>© 2024 Ntandostore. All rights reserved.</p>
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>Ntandostore</h4>
+                    <p>Your complete business solution provider. Quality services at affordable prices.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="{{ url_for('index') }}">Home</a></li>
+                        <li><a href="{{ url_for('services') }}">Services</a></li>
+                        <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Legal</h4>
+                    <ul>
+                        <li><a href="#terms">Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
+                        <li><a href="{{ url_for('refund') }}">Refund Policy</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="{{ url_for('services') }}#website">Website Design</a></li>
+                        <li><a href="{{ url_for('services') }}#logo">Logo Design</a></li>
+                        <li><a href="{{ url_for('services') }}#domain">Domain Registration</a></li>
+                        <li><a href="{{ url_for('services') }}#email">Email Hosting</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>© 2024 Ntandostore. All rights reserved.</p>
+                <p class="footer-tagline">Built with ❤️ in Zimbabwe</p>
+            </div>
         </div>
     </footer>
 
+    <!-- Scroll to Top Button -->
+    <button id="scrollToTop" class="scroll-to-top" aria-label="Scroll to top">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <!-- Live Chat Widget (Optional) -->
+    <div class="live-chat-button" id="liveChatBtn">
+        <i class="fas fa-comments"></i>
+        <span>Chat with us</span>
+    </div>
+
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Background Music Control
+        document.addEventListener('DOMContentLoaded', function() {
+            const bgMusic = document.getElementById('bgMusic');
+            const musicToggle = document.getElementById('musicToggle');
+            let isPlaying = false;
+
+            musicToggle.addEventListener('click', function() {
+                if (isPlaying) {
+                    bgMusic.pause();
+                    musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    isPlaying = false;
+                } else {
+                    bgMusic.play();
+                    musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    isPlaying = true;
+                }
+            });
+
+            // Scroll to Top
+            const scrollToTopBtn = document.getElementById('scrollToTop');
+            window.addEventListener('scroll', function() {
+                if (window.pageYOffset > 300) {
+                    scrollToTopBtn.classList.add('show');
+                } else {
+                    scrollToTopBtn.classList.remove('show');
+                }
+            });
+
+            scrollToTopBtn.addEventListener('click', function() {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+
+            // Mobile Menu Toggle
+            const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+            const navMenu = document.querySelector('.nav-menu');
+            
+            mobileMenuToggle.addEventListener('click', function() {
+                navMenu.classList.toggle('active');
+                this.classList.toggle('active');
+            });
+
+            // Alert Close Button
+            document.querySelectorAll('.alert-close').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    const target = document.querySelector(this.getAttribute('href'));
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>
