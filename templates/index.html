@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ntandostore - Your Complete Business Solution</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    {% if company_logo %}
+                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
+                    {% else %}
+                    <h1>Ntandostore</h1>
+                    {% endif %}
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                    <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
+                    <li><a href="#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">Your Complete Business Solution</h1>
+            <p class="hero-subtitle">From domains to designs, we've got everything your business needs</p>
+            <a href="{{ url_for('services') }}" class="btn btn-primary">Explore Services</a>
+        </div>
+    </section>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <section class="services-preview">
+        <div class="container">
+            <h2 class="section-title">Our Services</h2>
+            <div class="services-grid">
+                {% for service_id, service in services.items() %}
+                <div class="service-card">
+                    <div class="service-icon">
+                        {% if 'email' in service_id %}
+                            📧
+                        {% elif 'domain' in service_id %}
+                            🌐
+                        {% elif 'website' in service_id %}
+                            💻
+                        {% elif 'card' in service_id %}
+                            🎴
+                        {% elif 'logo' in service_id %}
+                            🎨
+                        {% elif 'bot' in service_id %}
+                            🤖
+                        {% elif 'app' in service_id %}
+                            📱
+                        {% else %}
+                            ⚡
+                        {% endif %}
+                    </div>
+                    <h3>{{ service.name }}</h3>
+                    <p>{{ service.description }}</p>
+                    <p class="price">${{ "%.2f"|format(service.price) }}</p>
+                    <a href="{{ url_for('order', service_id=service_id) }}" class="btn btn-secondary">Order Now</a>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <section class="features">
+        <div class="container">
+            <h2 class="section-title">Why Choose Ntandostore?</h2>
+            <div class="features-grid">
+                <div class="feature">
+                    <div class="feature-icon">✓</div>
+                    <h3>Professional Quality</h3>
+                    <p>Top-notch service for all your business needs</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Fast Delivery</h3>
+                    <p>Quick turnaround times without compromising quality</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">💰</div>
+                    <h3>Affordable Pricing</h3>
+                    <p>Competitive rates for all services</p>
+                </div>
+                <div class="feature">
+                    <div class="feature-icon">🛡️</div>
+                    <h3>Secure & Reliable</h3>
+                    <p>Your data and business are in safe hands</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get In Touch</h2>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <h3>📧 Email</h3>
+                    <p>infontandostore@no.vsmailpro.com<br>
+                    Ntandostore@no.vsmailpro.com<br>
+                    Modder@no.vsmailpro.com</p>
+                </div>
+                <div class="contact-item">
+                    <h3>📱 WhatsApp</h3>
+                    <p>+263 71 845 6744</p>
+                </div>
+                <div class="contact-item">
+                    <h3>💳 Payment</h3>
+                    <p>EcoCash/Innbucks: +263 78 683 1091</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 Ntandostore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
