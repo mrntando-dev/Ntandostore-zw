@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services - Ntandostore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    {% if company_logo %}
+                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
+                    {% else %}
+                    <h1>Ntandostore</h1>
+                    {% endif %}
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('services') }}" class="active">Services</a></li>
+                    <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
+                    <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <section class="page-header">
+        <div class="container">
+            <h1>Our Services</h1>
+            <p>Comprehensive business solutions tailored to your needs</p>
+        </div>
+    </section>
+
+    <section class="services-detailed">
+        <div class="container">
+            {% for service_id, service in services.items() %}
+            <div class="service-detail-card">
+                <div class="service-detail-content">
+                    <h2>{{ service.name }}</h2>
+                    <p class="service-description">{{ service.description }}</p>
+                    <p class="service-price">${{ "%.2f"|format(service.price) }}</p>
+                    {% if service_id == 'business_email' %}
+                    <ul class="service-features">
+                        <li>✓ Professional email address</li>
+                        <li>✓ Custom domain integration</li>
+                        <li>✓ Reliable delivery</li>
+                        <li>✓ 24/7 support</li>
+                    </ul>
+                    {% elif service_id == 'domain' %}
+                    <ul class="service-features">
+                        <li>✓ Domain registration</li>
+                        <li>✓ DNS configuration included</li>
+                        <li>✓ Free WHOIS protection</li>
+                        <li>✓ Easy management panel</li>
+                    </ul>
+                    {% elif service_id == 'website_design' %}
+                    <ul class="service-features">
+                        <li>✓ Custom website design</li>
+                        <li>✓ Hosting included</li>
+                        <li>✓ Security setup</li>
+                        <li>✓ Free upgrades</li>
+                    </ul>
+                    {% elif service_id == 'wa_bot' %}
+                    <ul class="service-features">
+                        <li>✓ Group management</li>
+                        <li>✓ Automated responses</li>
+                        <li>✓ Custom commands</li>
+                        <li>✓ 24/7 operation</li>
+                    </ul>
+                    {% endif %}
+                    <a href="{{ url_for('order', service_id=service_id) }}" class="btn btn-primary">Order Now</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 Ntandostore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
