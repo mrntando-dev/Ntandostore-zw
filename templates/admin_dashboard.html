@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Ntandostore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="admin-container">
+        <aside class="admin-sidebar">
+            <div class="admin-logo">
+                <h2>Ntandostore Admin</h2>
+            </div>
+            <nav class="admin-nav">
+                <a href="#overview" class="admin-nav-item active">📊 Overview</a>
+                <a href="#logos" class="admin-nav-item">🎨 Logo Gallery</a>
+                <a href="#orders" class="admin-nav-item">📦 Orders</a>
+                <a href="#company" class="admin-nav-item">🏢 Company Logo</a>
+                <a href="{{ url_for('admin_logout') }}" class="admin-nav-item">🚪 Logout</a>
+            </nav>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-header">
+                <h1>Welcome, {{ session.admin_username }}!</h1>
+                <p>Manage your business from here</p>
+            </header>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Overview Section -->
+            <section id="overview" class="admin-section">
+                <h2>Quick Stats</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <h3>{{ orders|length }}</h3>
+                            <p>Recent Orders</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🎨</div>
+                        <div class="stat-info">
+                            <h3>{{ logos|length }}</h3>
+                            <p>Portfolio Items</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">✓</div>
+                        <div class="stat-info">
+                            <h3>Active</h3>
+                            <p>System Status</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Upload Logo Section -->
+            <section id="logos" class="admin-section">
+                <h2>Logo Gallery Management</h2>
+                
+                <div class="upload-box">
+                    <h3>Upload New Logo</h3>
+                    <form id="logoUploadForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="client_name">Client Name (Optional)</label>
+                            <input type="text" id="client_name" name="client_name" placeholder="Enter client name">
+                        </div>
+                        <div class="form-group">
+                            <label for="logo_file">Logo File</label>
+                            <input type="file" id="logo_file" name="logo_file" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Upload Logo</button>
+                    </form>
+                </div>
+
+                <div class="logos-grid">
+                    {% for logo in logos %}
+                    <div class="logo-item" data-logo-id="{{ logo.id }}">
+                        <img src="{{ url_for('static', filename='uploads/logos/' + logo.filename) }}" alt="Logo">
+                        <div class="logo-info">
+                            <p class="logo-client">{{ logo.client_name or 'No name' }}</p>
+                            <p class="logo-date">{{ logo.upload_date.strftime('%Y-%m-%d') }}</p>
+                            <button class="btn btn-danger btn-small delete-logo" data-logo-id="{{ logo.id }}">Delete</button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </section>
+
+            <!-- Orders Section -->
+            <section id="orders" class="admin-section">
+                <h2>Recent Orders</h2>
+                <div class="table-container">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Service</th>
+                                <th>Customer</th>
+                                <th>Phone</th>
+                                <th>Amount</th>
+                                <th>Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for order in orders %}
+                            <tr>
+                                <td>#{{ order.id }}</td>
+                                <td>{{ order.service }}</td>
+                                <td>{{ order.customer_name }}</td>
+                                <td>{{ order.customer_phone }}</td>
+                                <td>${{ "%.2f"|format(order.amount) }}</td>
+                                <td>{{ order.order_date.strftime('%Y-%m-%d %H:%M') }}</td>
+                                <td><span class="status-badge status-{{ order.status }}">{{ order.status }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Company Logo Section -->
+            <section id="company" class="admin-section">
+                <h2>Company Logo</h2>
+                
+                <div class="upload-box">
+                    <h3>Upload Company Logo</h3>
+                    <p>This logo will appear on all pages of the website</p>
+                    
+                    {% if company_logo %}
+                    <div class="current-logo">
+                        <h4>Current Logo:</h4>
+                        <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Company Logo" style="max-width: 200px;">
+                    </div>
+                    {% endif %}
+                    
+                    <form id="companyLogoUploadForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="company_logo_file">New Company Logo</label>
+                            <input type="file" id="company_logo_file" name="company_logo_file" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Company Logo</button>
+                    </form>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script>
+        // Logo Upload
+        document.getElementById('logoUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/admin/upload_logo', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Logo uploaded successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+            }
+        });
+
+        // Company Logo Upload
+        document.getElementById('companyLogoUploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            try {
+                const response = await fetch('/admin/upload_company_logo', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (data.success) {
+                    alert('Company logo updated successfully!');
+                    location.reload();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                alert('Upload failed: ' + error.message);
+            }
+        });
+
+        // Delete Logo
+        document.querySelectorAll('.delete-logo').forEach(button => {
+            button.addEventListener('click', async (e) => {
+                if (!confirm('Are you sure you want to delete this logo?')) return;
+                
+                const logoId = e.target.dataset.logoId;
+                
+                try {
+                    const response = await fetch(`/admin/delete_logo/${logoId}`, {
+                        method: 'POST'
+                    });
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        alert('Logo deleted successfully!');
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                } catch (error) {
+                    alert('Delete failed: ' + error.message);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
