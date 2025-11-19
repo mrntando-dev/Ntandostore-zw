@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order {{ service.name }} - Ntandostore</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <div class="container">
+                <div class="logo">
+                    {% if company_logo %}
+                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
+                    {% else %}
+                    <h1>Ntandostore</h1>
+                    {% endif %}
+                </div>
+                <ul class="nav-menu">
+                    <li><a href="{{ url_for('index') }}">Home</a></li>
+                    <li><a href="{{ url_for('services') }}">Services</a></li>
+                    <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
+                    <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+                </ul>
+            </div>
+        </nav>
+    </header>
+
+    <section class="order-form-section">
+        <div class="container">
+            <div class="order-form-container">
+                <h1>Order {{ service.name }}</h1>
+                <p class="order-price">Price: ${{ "%.2f"|format(service.price) }}</p>
+                
+                <form method="POST" action="{{ url_for('submit_order') }}" class="order-form">
+                    <input type="hidden" name="service_id" value="{{ service_id }}">
+                    
+                    <div class="form-group">
+                        <label for="customer_name">Your Name *</label>
+                        <input type="text" id="customer_name" name="customer_name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer_email">Email Address *</label>
+                        <input type="email" id="customer_email" name="customer_email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="customer_phone">Phone Number *</label>
+                        <input type="tel" id="customer_phone" name="customer_phone" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="details">Additional Details</label>
+                        <textarea id="details" name="details" rows="5" placeholder="Tell us about your requirements..."></textarea>
+                    </div>
+                    
+                    <div class="payment-info">
+                        <h3>Payment Information</h3>
+                        <p><strong>After submitting this order, please make payment to:</strong></p>
+                        <p class="payment-number">📱 +263 78 683 1091</p>
+                        <p>Payment Methods: EcoCash / Innbucks</p>
+                        <p class="note">We'll receive your order details on WhatsApp and contact you shortly!</p>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary btn-large">Submit Order</button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>© 2024 Ntandostore. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
