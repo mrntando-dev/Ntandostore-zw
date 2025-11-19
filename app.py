@@ -12,11 +12,15 @@ app.secret_key = os.environ.get('SECRET_KEY', 'ntandostore_secret_key_2024')
 
 # Database configuration - use PostgreSQL for production
 DATABASE_URL = os.environ.get('DATABASE_URL')
-if DATABASE_URL and DATABASE_URL.startswith('postgresql://ntando_user:hE9jYl2QVozF7iURwVXqr1gTsFLftbiP@dpg-d4djg0jipnbc73a3tq80-a.oregon-postgres.render.com/ntando'):
-    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://ntando_user:hE9jYl2QVozF7iURwVXqr1gTsFLftbiP@dpg-d4djg0jipnbc73a3tq80-a.oregon-postgres.render.com/ntando', 1)
+if DATABASE_URL and DATABASE_URL.startswith('postgres://'):
+    DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
 
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'postgresql://ntando_user:hE9jYl2QVozF7iURwVXqr1gTsFLftbiP@dpg-d4djg0jipnbc73a3tq80-a.oregon-postgres.render.com/ntando'
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL or 'sqlite:///ntandostore.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+    'pool_pre_ping': True,
+    'pool_recycle': 300,
+}
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
@@ -50,7 +54,7 @@ class CompanyLogo(db.Model):
     is_active = db.Column(db.Boolean, default=True)
 
 class Order(db.Model):
-    __tablename__ = 'order'
+    __tablename__ = 'orders'
     id = db.Column(db.Integer, primary_key=True)
     service = db.Column(db.String(100), nullable=False)
     customer_name = db.Column(db.String(100), nullable=False)
@@ -177,6 +181,7 @@ def order(service_id):
         return render_template('order.html', service=service, service_id=service_id, company_logo=company_logo)
     except Exception as e:
         print(f"Error in order route: {e}")
+        service = SERVICES[service_id]
         return render_template('order.html', service=service, service_id=service_id, company_logo=None)
 
 @app.route('/submit_order', methods=['POST'])
@@ -186,7 +191,7 @@ def submit_order():
         customer_name = request.form.get('customer_name')
         customer_email = request.form.get('customer_email')
         customer_phone = request.form.get('customer_phone')
-        details = request.form.get('details')
+        details = request.form.get('details', '')
         
         if service_id not in SERVICES:
             flash('Invalid service', 'error')
@@ -222,6 +227,7 @@ def submit_order():
     
     except Exception as e:
         print(f'Error submitting order: {str(e)}')
+        db.session.rollback()
         flash(f'Error submitting order. Please try again.', 'error')
         return redirect(url_for('index'))
 
@@ -291,6 +297,7 @@ def upload_logo():
             return jsonify({'success': True, 'message': 'Logo uploaded successfully'})
     except Exception as e:
         print(f"Upload error: {e}")
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/upload_company_logo', methods=['POST'])
@@ -324,6 +331,7 @@ def upload_company_logo():
             return jsonify({'success': True, 'message': 'Company logo updated successfully'})
     except Exception as e:
         print(f"Company logo upload error: {e}")
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/delete_logo/<int:logo_id>', methods=['POST'])
@@ -345,6 +353,7 @@ def delete_logo(logo_id):
         return jsonify({'success': True, 'message': 'Logo deleted successfully'})
     except Exception as e:
         print(f"Delete error: {e}")
+        db.session.rollback()
         return jsonify({'error': str(e)}), 500
 
 @app.route('/admin/logout')
@@ -355,13 +364,21 @@ def admin_logout():
 @app.route('/health')
 def health():
     """Health check endpoint"""
-    return jsonify({'status': 'healthy'}), 200
+    try:
+        # Test database connection
+        db.session.execute(db.text('SELECT 1'))
+        return jsonify({'status': 'healthy', 'database': 'connected'}), 200
+    except Exception as e:
+        return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
 
 # Initialize database
 def init_db():
+    """Initialize database tables and create default admin"""
     with app.app_context():
         try:
+            print("Creating database tables...")
             db.create_all()
+            print("✓ Database tables created")
             
             # Create default admin if not exists
             admin = Admin.query.filter_by(username='Ntando').first()
@@ -372,9 +389,30 @@ def init_db():
                 )
                 db.session.add(admin)
                 db.session.commit()
-                print("Default admin created: username=Ntando, password=Ntando")
+                print("✓ Default admin created: username=Ntando, password=Ntando")
+            else:
+                print("✓ Admin already exists")
+                
+            print("✓ Database initialization completed")
+            return True
         except Exception as e:
-            print(f"Database initialization error: {e}")
+            print(f"✗ Database initialization error: {e}")
+            return False
+
+# Auto-initialize database on first request
+@app.before_request
+def initialize_database():
+    """Initialize database on first request"""
+    if not hasattr(app, 'db_initialized'):
+        try:
+            # Test if tables exist
+            db.session.execute(db.text('SELECT 1 FROM admin LIMIT 1'))
+            app.db_initialized = True
+        except:
+            # Tables don't exist, initialize them
+            print("Initializing database on first request...")
+            if init_db():
+                app.db_initialized = True
 
 if __name__ == '__main__':
     init_db()
