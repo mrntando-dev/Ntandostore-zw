@@ -52,6 +52,7 @@ class CompanyLogo(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     filename = db.Column(db.String(200), nullable=False)
     is_active = db.Column(db.Boolean, default=True)
+    upload_date = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Order(db.Model):
     __tablename__ = 'orders'
@@ -64,6 +65,23 @@ class Order(db.Model):
     amount = db.Column(db.Float, nullable=False)
     order_date = db.Column(db.DateTime, default=datetime.utcnow)
     status = db.Column(db.String(20), default='pending')
+
+class ContactMessage(db.Model):
+    __tablename__ = 'contact_messages'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(100), nullable=False)
+    service = db.Column(db.String(100))
+    message = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='new')
+
+class Newsletter(db.Model):
+    __tablename__ = 'newsletter'
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(100), unique=True, nullable=False)
+    subscribed_date = db.Column(db.DateTime, default=datetime.utcnow)
+    is_active = db.Column(db.Boolean, default=True)
 
 # Services Configuration
 SERVICES = {
@@ -141,6 +159,7 @@ Payment Number: +263786831091 (EcoCash/Innbucks)
         print(f"WhatsApp notification error: {e}")
         return False
 
+# Public Routes
 @app.route('/')
 def index():
     try:
@@ -168,6 +187,49 @@ def gallery():
     except Exception as e:
         print(f"Error in gallery route: {e}")
         return render_template('gallery.html', logos=[], company_logo=None)
+
+@app.route('/testimonials')
+def testimonials():
+    try:
+        company_logo = CompanyLogo.query.filter_by(is_active=True).first()
+        # You can create a separate testimonials.html template or reuse index.html
+        return render_template('index.html', services=SERVICES, company_logo=company_logo)
+    except Exception as e:
+        print(f"Error in testimonials route: {e}")
+        return render_template('index.html', services=SERVICES, company_logo=None)
+
+@app.route('/faq')
+def faq():
+    try:
+        company_logo = CompanyLogo.query.filter_by(is_active=True).first()
+        # You can create a separate faq.html template or reuse index.html
+        return render_template('index.html', services=SERVICES, company_logo=company_logo)
+    except Exception as e:
+        print(f"Error in FAQ route: {e}")
+        return render_template('index.html', services=SERVICES, company_logo=None)
+
+@app.route('/privacy')
+def privacy():
+    try:
+        company_logo = CompanyLogo.query.filter_by(is_active=True).first()
+        return render_template('index.html', services=SERVICES, company_logo=company_logo)
+    except Exception as e:
+        print(f"Error in privacy route: {e}")
+        return render_template('index.html', services=SERVICES, company_logo=None)
+
+@app.route('/refund')
+def refund():
+    try:
+        company_logo = CompanyLogo.query.filter_by(is_active=True).first()
+        return render_template('index.html', services=SERVICES, company_logo=company_logo)
+    except Exception as e:
+        print(f"Error in refund route: {e}")
+        return render_template('index.html', services=SERVICES, company_logo=None)
+
+@app.route('/terms_pdf')
+def terms_pdf():
+    flash('PDF download will be available soon.', 'info')
+    return redirect(url_for('index'))
 
 @app.route('/order/<service_id>')
 def order(service_id):
@@ -231,6 +293,71 @@ def submit_order():
         flash(f'Error submitting order. Please try again.', 'error')
         return redirect(url_for('index'))
 
+@app.route('/contact', methods=['POST'])
+def contact_submit():
+    try:
+        name = request.form.get('name')
+        email = request.form.get('email')
+        service = request.form.get('service')
+        message = request.form.get('message')
+        
+        # Save contact message to database
+        contact = ContactMessage(
+            name=name,
+            email=email,
+            service=service,
+            message=message
+        )
+        db.session.add(contact)
+        db.session.commit()
+        
+        # Send notification
+        notification_data = {
+            'service': 'Contact Form',
+            'amount': 0.00,
+            'customer_name': name,
+            'customer_email': email,
+            'customer_phone': 'N/A',
+            'details': f"Service Interest: {service}\nMessage: {message}"
+        }
+        send_whatsapp_notification(notification_data)
+        
+        flash('Thank you for contacting us! We will get back to you soon.', 'success')
+        return redirect(url_for('index') + '#contact')
+    except Exception as e:
+        print(f"Contact form error: {e}")
+        db.session.rollback()
+        flash('Error sending message. Please try again.', 'error')
+        return redirect(url_for('index') + '#contact')
+
+@app.route('/subscribe', methods=['POST'])
+def subscribe():
+    try:
+        email = request.form.get('email')
+        
+        # Check if email already exists
+        existing = Newsletter.query.filter_by(email=email).first()
+        if existing:
+            if existing.is_active:
+                flash('You are already subscribed to our newsletter!', 'info')
+            else:
+                existing.is_active = True
+                db.session.commit()
+                flash('Welcome back! You have been re-subscribed.', 'success')
+        else:
+            # Add new subscriber
+            subscriber = Newsletter(email=email)
+            db.session.add(subscriber)
+            db.session.commit()
+            flash('Thank you for subscribing to our newsletter!', 'success')
+        
+        return redirect(url_for('index'))
+    except Exception as e:
+        print(f"Subscribe error: {e}")
+        db.session.rollback()
+        flash('Error subscribing. Please try again.', 'error')
+        return redirect(url_for('index'))
+
 # Admin Routes
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
@@ -244,6 +371,7 @@ def admin_login():
             if admin and check_password_hash(admin.password, password):
                 session['admin_logged_in'] = True
                 session['admin_username'] = username
+                flash('Login successful!', 'success')
                 return redirect(url_for('admin_dashboard'))
             else:
                 flash('Invalid credentials', 'error')
@@ -256,6 +384,7 @@ def admin_login():
 @app.route('/admin/dashboard')
 def admin_dashboard():
     if not session.get('admin_logged_in'):
+        flash('Please login to access the admin dashboard', 'error')
         return redirect(url_for('admin_login'))
     
     try:
@@ -263,10 +392,31 @@ def admin_dashboard():
         orders = Order.query.order_by(Order.order_date.desc()).limit(20).all()
         company_logo = CompanyLogo.query.filter_by(is_active=True).first()
         
-        return render_template('admin_dashboard.html', logos=logos, orders=orders, company_logo=company_logo)
+        # Statistics
+        total_orders = Order.query.count()
+        pending_orders = Order.query.filter_by(status='pending').count()
+        completed_orders = Order.query.filter_by(status='completed').count()
+        total_revenue = db.session.query(db.func.sum(Order.amount)).filter_by(status='completed').scalar() or 0
+        
+        stats = {
+            'total_orders': total_orders,
+            'pending_orders': pending_orders,
+            'completed_orders': completed_orders,
+            'total_revenue': total_revenue
+        }
+        
+        return render_template('admin_dashboard.html', 
+                             logos=logos, 
+                             orders=orders, 
+                             company_logo=company_logo,
+                             stats=stats)
     except Exception as e:
         print(f"Dashboard error: {e}")
-        return render_template('admin_dashboard.html', logos=[], orders=[], company_logo=None)
+        return render_template('admin_dashboard.html', 
+                             logos=[], 
+                             orders=[], 
+                             company_logo=None,
+                             stats={})
 
 @app.route('/admin/upload_logo', methods=['POST'])
 def upload_logo():
@@ -275,13 +425,15 @@ def upload_logo():
     
     try:
         if 'logo_file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+            flash('No file uploaded', 'error')
+            return redirect(url_for('admin_dashboard'))
         
         file = request.files['logo_file']
         client_name = request.form.get('client_name', '')
         
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            flash('No file selected', 'error')
+            return redirect(url_for('admin_dashboard'))
         
         if file:
             filename = secure_filename(file.filename)
@@ -294,11 +446,13 @@ def upload_logo():
             db.session.add(logo)
             db.session.commit()
             
-            return jsonify({'success': True, 'message': 'Logo uploaded successfully'})
+            flash('Logo uploaded successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
     except Exception as e:
         print(f"Upload error: {e}")
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error uploading logo: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/upload_company_logo', methods=['POST'])
 def upload_company_logo():
@@ -307,12 +461,14 @@ def upload_company_logo():
     
     try:
         if 'company_logo_file' not in request.files:
-            return jsonify({'error': 'No file uploaded'}), 400
+            flash('No file uploaded', 'error')
+            return redirect(url_for('admin_dashboard'))
         
         file = request.files['company_logo_file']
         
         if file.filename == '':
-            return jsonify({'error': 'No file selected'}), 400
+            flash('No file selected', 'error')
+            return redirect(url_for('admin_dashboard'))
         
         if file:
             # Deactivate old logos
@@ -328,11 +484,13 @@ def upload_company_logo():
             db.session.add(company_logo)
             db.session.commit()
             
-            return jsonify({'success': True, 'message': 'Company logo updated successfully'})
+            flash('Company logo updated successfully!', 'success')
+            return redirect(url_for('admin_dashboard'))
     except Exception as e:
         print(f"Company logo upload error: {e}")
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error uploading company logo: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/delete_logo/<int:logo_id>', methods=['POST'])
 def delete_logo(logo_id):
@@ -350,15 +508,41 @@ def delete_logo(logo_id):
         db.session.delete(logo)
         db.session.commit()
         
-        return jsonify({'success': True, 'message': 'Logo deleted successfully'})
+        flash('Logo deleted successfully!', 'success')
+        return redirect(url_for('admin_dashboard'))
     except Exception as e:
         print(f"Delete error: {e}")
         db.session.rollback()
-        return jsonify({'error': str(e)}), 500
+        flash(f'Error deleting logo: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
+
+@app.route('/admin/update_order_status/<int:order_id>', methods=['POST'])
+def update_order_status(order_id):
+    if not session.get('admin_logged_in'):
+        return jsonify({'error': 'Unauthorized'}), 401
+    
+    try:
+        order = Order.query.get_or_404(order_id)
+        new_status = request.form.get('status')
+        
+        if new_status in ['pending', 'in-progress', 'completed', 'cancelled']:
+            order.status = new_status
+            db.session.commit()
+            flash(f'Order status updated to {new_status}!', 'success')
+        else:
+            flash('Invalid status', 'error')
+        
+        return redirect(url_for('admin_dashboard'))
+    except Exception as e:
+        print(f"Update status error: {e}")
+        db.session.rollback()
+        flash(f'Error updating order status: {str(e)}', 'error')
+        return redirect(url_for('admin_dashboard'))
 
 @app.route('/admin/logout')
 def admin_logout():
     session.clear()
+    flash('You have been logged out successfully', 'success')
     return redirect(url_for('index'))
 
 @app.route('/health')
@@ -370,6 +554,16 @@ def health():
         return jsonify({'status': 'healthy', 'database': 'connected'}), 200
     except Exception as e:
         return jsonify({'status': 'unhealthy', 'error': str(e)}), 500
+
+# Error Handlers
+@app.errorhandler(404)
+def not_found_error(error):
+    return render_template('index.html', services=SERVICES, company_logo=None), 404
+
+@app.errorhandler(500)
+def internal_error(error):
+    db.session.rollback()
+    return render_template('index.html', services=SERVICES, company_logo=None), 500
 
 # Initialize database
 def init_db():
@@ -397,6 +591,7 @@ def init_db():
             return True
         except Exception as e:
             print(f"✗ Database initialization error: {e}")
+            db.session.rollback()
             return False
 
 # Auto-initialize database on first request
