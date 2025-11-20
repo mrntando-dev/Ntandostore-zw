@@ -3,67 +3,574 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Portfolio - Ntandostore</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <title>Gallery - Ntandostore</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/aos@2.3.1/dist/aos.css">
+    <style>
+        :root {
+            --primary-color: #6366f1;
+            --secondary-color: #8b5cf6;
+            --accent-color: #ec4899;
+            --dark-bg: #1e1b4b;
+            --light-bg: #f8fafc;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: rgba(30, 27, 75, 0.95) !important;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: bold;
+            font-size: 1.5rem;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header {
+            background: linear-gradient(135deg, rgba(30, 27, 75, 0.9), rgba(99, 102, 241, 0.9));
+            padding: 100px 0 60px;
+            text-align: center;
+            color: white;
+            margin-bottom: 50px;
+        }
+
+        .page-header h1 {
+            font-size: 3.5rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .filter-section {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .filter-btn {
+            margin: 5px;
+            padding: 10px 25px;
+            border: 2px solid var(--primary-color);
+            background: white;
+            color: var(--primary-color);
+            border-radius: 25px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            background: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(99, 102, 241, 0.4);
+        }
+
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 30px;
+            padding: 20px 0;
+        }
+
+        .gallery-item {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: white;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            transition: transform 0.4s;
+        }
+
+        .gallery-item:hover .gallery-image {
+            transform: scale(1.1);
+        }
+
+        .gallery-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+            padding: 20px;
+            transform: translateY(100%);
+            transition: transform 0.3s;
+        }
+
+        .gallery-item:hover .gallery-overlay {
+            transform: translateY(0);
+        }
+
+        .gallery-title {
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .gallery-date {
+            color: #ddd;
+            font-size: 0.9rem;
+        }
+
+        .zoom-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: white;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .gallery-item:hover .zoom-btn {
+            opacity: 1;
+        }
+
+        .zoom-btn:hover {
+            background: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+        }
+
+        .search-box {
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 15px 50px 15px 20px;
+            border: 2px solid #e5e7eb;
+            border-radius: 30px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-box input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6b7280;
+        }
+
+        .stats-section {
+            background: white;
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+
+        .stat-label {
+            color: #6b7280;
+            font-size: 1rem;
+        }
+
+        .lightbox {
+            display: none;
+            position: fixed;
+            z-index: 9999;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            align-items: center;
+            justify-content: center;
+        }
+
+        .lightbox.active {
+            display: flex;
+        }
+
+        .lightbox-content {
+            max-width: 90%;
+            max-height: 90%;
+            position: relative;
+        }
+
+        .lightbox-image {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 10px;
+        }
+
+        .lightbox-close {
+            position: absolute;
+            top: -50px;
+            right: 0;
+            color: white;
+            font-size: 2rem;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 2rem;
+            padding: 20px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+
+        .lightbox-nav:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .lightbox-prev { left: 20px; }
+        .lightbox-next { right: 20px; }
+
+        .empty-gallery {
+            text-align: center;
+            padding: 100px 20px;
+            color: white;
+        }
+
+        .empty-gallery i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        footer {
+            background: rgba(30, 27, 75, 0.95);
+            color: white;
+            padding: 40px 0 20px;
+            margin-top: 80px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="container">
-                <div class="logo">
-                    {% if company_logo %}
-                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
-                    {% else %}
-                    <h1>Ntandostore</h1>
-                    {% endif %}
-                </div>
-                <ul class="nav-menu">
-                    <li><a href="{{ url_for('index') }}">Home</a></li>
-                    <li><a href="{{ url_for('services') }}">Services</a></li>
-                    <li><a href="{{ url_for('gallery') }}" class="active">Portfolio</a></li>
-                    <li><a href="{{ url_for('index') }}#contact">Contact</a></li>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                {% if company_logo %}
+                <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" 
+                     alt="Ntandostore" height="40" class="me-2">
+                {% else %}
+                <i class="fas fa-store me-2"></i>Ntandostore
+                {% endif %}
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('services') }}">Services</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="{{ url_for('gallery') }}">Gallery</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{{ url_for('index') }}#contact">Contact</a></li>
                 </ul>
             </div>
-        </nav>
-    </header>
-
-    <section class="page-header">
-        <div class="container">
-            <h1>Our Portfolio</h1>
-            <p>Check out some of the amazing logos we've created for our clients</p>
         </div>
-    </section>
+    </nav>
 
-    <section class="gallery-section">
+    <!-- Page Header -->
+    <div class="page-header" data-aos="fade-down">
         <div class="container">
-            {% if logos %}
-            <div class="gallery-grid">
-                {% for logo in logos %}
-                <div class="gallery-item">
-                    <img src="{{ url_for('static', filename='uploads/logos/' + logo.filename) }}" alt="Logo">
-                    {% if logo.client_name %}
-                    <div class="gallery-overlay">
-                        <p>{{ logo.client_name }}</p>
+            <h1><i class="fas fa-images me-3"></i>Our Portfolio</h1>
+            <p class="lead">Explore our collection of stunning logo designs</p>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Statistics -->
+        <div class="stats-section" data-aos="fade-up">
+            <div class="row">
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number" id="total-projects">{{ logos|length }}</div>
+                        <div class="stat-label">Total Projects</div>
                     </div>
-                    {% endif %}
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Happy Clients</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">5+</div>
+                        <div class="stat-label">Years Experience</div>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6">
+                    <div class="stat-item">
+                        <div class="stat-number">98%</div>
+                        <div class="stat-label">Satisfaction Rate</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Box -->
+        <div class="search-box" data-aos="fade-up" data-aos-delay="100">
+            <input type="text" id="searchInput" placeholder="Search by client name...">
+            <i class="fas fa-search search-icon"></i>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="filter-section" data-aos="fade-up" data-aos-delay="200">
+            <div class="text-center">
+                <h4 class="mb-3"><i class="fas fa-filter me-2"></i>Filter Gallery</h4>
+                <button class="filter-btn active" data-filter="all">All Projects</button>
+                <button class="filter-btn" data-filter="recent">Recent</button>
+                <button class="filter-btn" data-filter="popular">Popular</button>
+            </div>
+        </div>
+
+        <!-- Gallery Grid -->
+        <div class="gallery-grid" id="galleryGrid">
+            {% if logos %}
+                {% for logo in logos %}
+                <div class="gallery-item" data-aos="zoom-in" data-aos-delay="{{ loop.index * 50 }}" data-client="{{ logo.client_name|lower }}">
+                    <img src="{{ url_for('static', filename='uploads/logos/' + logo.filename) }}" 
+                         alt="{{ logo.client_name or 'Logo Design' }}" 
+                         class="gallery-image"
+                         data-index="{{ loop.index0 }}">
+                    <button class="zoom-btn" onclick="openLightbox({{ loop.index0 }})">
+                        <i class="fas fa-search-plus"></i>
+                    </button>
+                    <div class="gallery-overlay">
+                        <div class="gallery-title">{{ logo.client_name or 'Custom Logo Design' }}</div>
+                        <div class="gallery-date">
+                            <i class="far fa-calendar me-2"></i>{{ logo.upload_date.strftime('%B %d, %Y') }}
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
-            </div>
             {% else %}
-            <div class="empty-state">
-                <p>No portfolio items yet. Check back soon!</p>
-            </div>
+                <div class="col-12">
+                    <div class="empty-gallery">
+                        <i class="fas fa-images"></i>
+                        <h3>No Projects Yet</h3>
+                        <p>Our amazing work will be showcased here soon!</p>
+                    </div>
+                </div>
             {% endif %}
         </div>
-    </section>
 
+        <!-- No Results Message -->
+        <div id="noResults" style="display: none;" class="text-center py-5">
+            <div class="empty-gallery">
+                <i class="fas fa-search"></i>
+                <h3>No Results Found</h3>
+                <p>Try adjusting your search or filters</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lightbox -->
+    <div class="lightbox" id="lightbox">
+        <div class="lightbox-content">
+            <button class="lightbox-close" onclick="closeLightbox()">
+                <i class="fas fa-times"></i>
+            </button>
+            <button class="lightbox-nav lightbox-prev" onclick="navigateLightbox(-1)">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <img src="" alt="Gallery Image" class="lightbox-image" id="lightboxImage">
+            <button class="lightbox-nav lightbox-next" onclick="navigateLightbox(1)">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
     <footer>
-        <div class="container">
+        <div class="container text-center">
             <p>© 2024 Ntandostore. All rights reserved.</p>
+            <div class="social-links mt-3">
+                <a href="https://wa.me/263718456744" target="_blank" class="text-white me-3">
+                    <i class="fab fa-whatsapp fa-2x"></i>
+                </a>
+                <a href="tel:+263718456744" class="text-white me-3">
+                    <i class="fas fa-phone fa-2x"></i>
+                </a>
+                <a href="mailto:info@ntandostore.com" class="text-white">
+                    <i class="fas fa-envelope fa-2x"></i>
+                </a>
+            </div>
         </div>
     </footer>
 
-    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 800,
+            once: true
+        });
+
+        // Gallery data
+        const galleryItems = document.querySelectorAll('.gallery-item');
+        const images = Array.from(galleryItems).map(item => 
+            item.querySelector('.gallery-image').src
+        );
+        let currentImageIndex = 0;
+
+        // Search functionality
+        const searchInput = document.getElementById('searchInput');
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterGallery(searchTerm);
+        });
+
+        function filterGallery(searchTerm) {
+            let visibleCount = 0;
+            galleryItems.forEach(item => {
+                const clientName = item.dataset.client || '';
+                if (clientName.includes(searchTerm)) {
+                    item.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            document.getElementById('noResults').style.display = 
+                visibleCount === 0 ? 'block' : 'none';
+        }
+
+        // Filter buttons
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                filterBtns.forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                const filter = this.dataset.filter;
+                if (filter === 'all') {
+                    galleryItems.forEach(item => item.style.display = 'block');
+                } else if (filter === 'recent') {
+                    // Show only recent items (first 6)
+                    galleryItems.forEach((item, index) => {
+                        item.style.display = index < 6 ? 'block' : 'none';
+                    });
+                }
+            });
+        });
+
+        // Lightbox functions
+        function openLightbox(index) {
+            currentImageIndex = index;
+            document.getElementById('lightboxImage').src = images[index];
+            document.getElementById('lightbox').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightbox').classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+
+        function navigateLightbox(direction) {
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) currentImageIndex = images.length - 1;
+            if (currentImageIndex >= images.length) currentImageIndex = 0;
+            document.getElementById('lightboxImage').src = images[currentImageIndex];
+        }
+
+        // Keyboard navigation
+        document.addEventListener('keydown', function(e) {
+            const lightbox = document.getElementById('lightbox');
+            if (lightbox.classList.contains('active')) {
+                if (e.key === 'Escape') closeLightbox();
+                if (e.key === 'ArrowLeft') navigateLightbox(-1);
+                if (e.key === 'ArrowRight') navigateLightbox(1);
+            }
+        });
+
+        // Close lightbox on background click
+        document.getElementById('lightbox').addEventListener('click', function(e) {
+            if (e.target === this) closeLightbox();
+        });
+
+        // Counter animation
+        function animateCounter(element, target, duration = 2000) {
+            let current = 0;
+            const increment = target / (duration / 16);
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    element.textContent = Math.round(target);
+                    clearInterval(timer);
+                } else {
+                    element.textContent = Math.round(current);
+                }
+            }, 16);
+        }
+
+        // Animate counters on page load
+        window.addEventListener('load', function() {
+            const totalProjects = document.getElementById('total-projects');
+            if (totalProjects) {
+                const target = parseInt(totalProjects.textContent);
+                animateCounter(totalProjects, target);
+            }
+        });
+    </script>
 </body>
 </html>
