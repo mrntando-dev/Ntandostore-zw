@@ -2,10 +2,9 @@ services:
   # Web Service
   - type: web
     name: ntandostore
-    env: python
+    env: docker
     plan: starter
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    dockerfilePath: ./Dockerfile
     healthCheckPath: /health
     
     # Environment Variables
@@ -18,10 +17,12 @@ services:
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.0
+      - key: FLASK_APP
+        value: app.py
         
     # Build Configuration
     build:
-      baseImage: python:3.11-slim
+      baseImage: python:3.11
       
     # Auto-Deploy Configuration
     autoDeploy: false
@@ -29,18 +30,18 @@ services:
     # Scaling Configuration
     scaling:
       minInstances: 1
-      maxInstances: 3
-      targetMemoryPercent: 75
-      targetCPUPercent: 75
+      maxInstances: 1
+      targetMemoryPercent: 80
+      targetCPUPercent: 80
       
     # Health Check Configuration
     healthCheck:
       http:
         path: /health
-        port: 5000
-      initialDelaySeconds: 30
-      periodSeconds: 10
-      timeoutSeconds: 5
+        port: $PORT
+      initialDelaySeconds: 60
+      periodSeconds: 15
+      timeoutSeconds: 10
       failureThreshold: 3
 
   # PostgreSQL Database
@@ -84,6 +85,8 @@ metadata:
   name: Ntandostore - Business Solutions Platform
   description: Complete business solution platform offering website design, logo design, domain registration, hosting, and digital services
   author: Ntando Mods Team
+
+
   
 # Deployment Hooks
 hooks:
@@ -98,18 +101,6 @@ hooks:
     commands:
       - echo "Build completed successfully"
       - ls -la static/
-      
-  # Pre-deploy hook
-  preDeploy:
-    commands:
-      - echo "Initializing database..."
-      - python -c "from app import init_db; init_db()"
-      
-  # Post-deploy hook
-  postDeploy:
-    commands:
-      - echo "Deployment completed successfully"
-      - curl -f http://localhost:5000/health || exit 1
 
 # Notification Configuration
 notifications:
