@@ -3,134 +3,24 @@ services:
   - type: web
     name: ntandostore
     env: python
-    plan: starter
-    buildCommand: "chmod +x install.sh && ./install.sh"
-    startCommand: "python app.py"
-    healthCheckPath: /health
-    
-    # Environment Variables
+    plan: free
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
     envVars:
-      - key: FLASK_ENV
-        value: production
-      - key: SECRET_KEY
-        generateValue: true
-      - key: CSRF_SECRET_KEY
-        generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.0
-      - key: FLASK_APP
-        value: app.py
-        
-    # Build Configuration
-    build:
-      baseImage: python:3.11
-      
-    # Auto-Deploy Configuration
-    autoDeploy: false
-    
-    # Scaling Configuration
-    scaling:
-      minInstances: 1
-      maxInstances: 1
-      targetMemoryPercent: 85
-      targetCPUPercent: 85
-      
-    # Health Check Configuration
-    healthCheck:
-      http:
-        path: /health
-        port: $PORT
-      initialDelaySeconds: 120
-      periodSeconds: 30
-      timeoutSeconds: 30
-      failureThreshold: 5
+      - key: SECRET_KEY
+        generateValue: true
+      - key: FLASK_ENV
+        value: production
+      - key: PORT
+        value: 10000
 
-  # PostgreSQL Database
+  # PostgreSQL Database (Optional - if you want to use PostgreSQL instead of SQLite)
   - type: pserv
     name: ntandostore-db
     env: postgres
-    plan: starter
-    
-    # Database Configuration
+    plan: free
     databases:
-      - name: ntandostore
+      - name: ntandostore_db
         user: ntando
-        
-    # Backup Configuration
-    backupConfig:
-      backupHour: 2
-      backupMinute: 0
-      retentionDays: 30
-      
-    # Connection Details
-    connectionInfo:
-      host: ntandostore-db
-      port: 5432
-
-  # Redis for Sessions and Caching
-  - type: pserv
-    name: ntandostore-redis
-    env: redis
-    plan: starter
-    
-    # Redis Configuration
-    config:
-      maxmemory: 256mb
-      maxmemory-policy: allkeys-lru
-
-# Application Configuration
-version: "1.0"
-
-# Metadata
-metadata:
-  name: Ntandostore - Business Solutions Platform
-  description: Complete business solution platform offering website design, logo design, domain registration, hosting, and digital services
-  author: Ntando Mods Team
-
-
-  
-# Deployment Hooks
-hooks:
-  # Pre-build hook
-  preBuild:
-    commands:
-      - echo "Starting deployment process..."
-      - python --version
-      
-  # Post-build hook
-  postBuild:
-    commands:
-      - echo "Build completed successfully"
-      - ls -la static/
-
-# Notification Configuration
-notifications:
-  email:
-    enabled: false
-    
-# Custom Domains (to be configured after deployment)
-domains:
-  - domain: ntandostore.onrender.com
-    type: primary
-
-# Security Configuration
-security:
-  sslEnabled: true
-  allowedMethods:
-    - GET
-    - POST
-    - PUT
-    - DELETE
-    - OPTIONS
-  allowedHeaders:
-    - Content-Type
-    - Authorization
-    - X-CSRF-Token
-  exposedHeaders:
-    - X-Total-Count
-
-# Performance Configuration
-performance:
-  cachingEnabled: true
-  compressionEnabled: true
-  minificationEnabled: true
