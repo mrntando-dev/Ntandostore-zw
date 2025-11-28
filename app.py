@@ -11,7 +11,6 @@ from datetime import datetime, timedelta
 import secrets
 import re
 from PIL import Image
-import bcrypt
 import hashlib
 from functools import wraps
 import logging
