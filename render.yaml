@@ -4,8 +4,8 @@ services:
     name: ntandostore
     env: python
     plan: free
-    buildCommand: "pip install -r requirements.txt"
-    startCommand: "gunicorn app:app"
+    buildCommand: "pip install --upgrade pip && pip install -r requirements.txt"
+    startCommand: "gunicorn app:app --bind 0.0.0.0:$PORT --workers 1 --timeout 120"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -15,12 +15,7 @@ services:
         value: production
       - key: PORT
         value: 10000
-
-  # PostgreSQL Database (Optional - if you want to use PostgreSQL instead of SQLite)
-  - type: pserv
-    name: ntandostore-db
-    env: postgres
-    plan: free
-    databases:
-      - name: ntandostore_db
-        user: ntando
+      - key: PIP_NO_CACHE_DIR
+        value: "1"
+      - key: PIP_DISABLE_PIP_VERSION_CHECK
+        value: "1"
