@@ -3,12 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ntandostore - Your Complete Business Solution</title>
+    <title>Ntandostore - Your Complete Business Solution | Built by Ntando Mods</title>
+    <meta name="description" content="Professional business services including website design, logo design, domain registration, hosting, and more. Quality services at affordable prices in Zimbabwe.">
+    <meta name="keywords" content="website design, logo design, domain registration, hosting, Zimbabwe business, digital services">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<script src="https://sites.super.myninja.ai/_assets/ninja-daytona-script.js"></script>
 </head>
 <body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+            <h2>Ntandostore</h2>
+            <p>Loading amazing services...</p>
+        </div>
+    </div>
+
+    <!-- Dark Mode Toggle -->
+    <div class="theme-toggle" id="themeToggle">
+        <button class="theme-btn" aria-label="Toggle dark mode">
+            <i class="fas fa-moon" id="themeIcon"></i>
+        </button>
+    </div>
+
     <!-- Background Music Player -->
     <div class="music-player" id="musicPlayer">
         <audio id="bgMusic" loop>
@@ -24,18 +47,18 @@
             <div class="container">
                 <div class="logo">
                     {% if company_logo %}
-                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
+                    <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore" loading="lazy">
                     {% else %}
-                    <h1>Ntandostore</h1>
+                    <h1><i class="fas fa-store"></i> Ntandostore</h1>
                     {% endif %}
                 </div>
                 <ul class="nav-menu">
-                    <li><a href="{{ url_for('index') }}">Home</a></li>
-                    <li><a href="{{ url_for('services') }}">Services</a></li>
-                    <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
-                    <li><a href="{{ url_for('testimonials') }}">Testimonials</a></li>
-                    <li><a href="{{ url_for('faq') }}">FAQ</a></li>
-                    <li><a href="#contact">Contact</a></li>
+                    <li><a href="{{ url_for('index') }}" class="nav-link active"><i class="fas fa-home"></i> Home</a></li>
+                    <li><a href="{{ url_for('services') }}" class="nav-link"><i class="fas fa-cogs"></i> Services</a></li>
+                    <li><a href="{{ url_for('gallery') }}" class="nav-link"><i class="fas fa-images"></i> Portfolio</a></li>
+                    <li><a href="{{ url_for('testimonials') }}" class="nav-link"><i class="fas fa-star"></i> Testimonials</a></li>
+                    <li><a href="{{ url_for('faq') }}" class="nav-link"><i class="fas fa-question-circle"></i> FAQ</a></li>
+                    <li><a href="#contact" class="nav-link"><i class="fas fa-envelope"></i> Contact</a></li>
                 </ul>
                 <div class="mobile-menu-toggle" id="mobileMenuToggle">
                     <span></span>
@@ -46,106 +69,376 @@
         </nav>
     </header>
 
-    <section class="hero">
-        <div class="container">
-            <h1 class="hero-title">Your Complete Business Solution</h1>
-            <p class="hero-subtitle">From domains to designs, we've got everything your business needs</p>
-            <div class="hero-buttons">
-                <a href="{{ url_for('services') }}" class="btn btn-primary">Explore Services</a>
-                <a href="#contact" class="btn btn-outline">Get Quote</a>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert-container">
+                {% for category, message in messages %}
+                <div class="alert alert-{{ category }} animate-slideIn">
+                    <div class="alert-content">
+                        <i class="fas fa-{% if category == 'success' %}check-circle{% elif category == 'error' %}exclamation-circle{% else %}info-circle{% endif %}"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                    <button class="alert-close" aria-label="Close alert">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                {% endfor %}
             </div>
+        {% endif %}
+    {% endwith %}
+
+    <section class="hero">
+        <div class="hero-background">
+            <div class="hero-particles"></div>
+        </div>
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-text">
+                    <h1 class="hero-title animate-fadeInUp">
+                        <span class="gradient-text">Your Complete</span><br>
+                        <span class="highlight">Business Solution</span>
+                    </h1>
+                    <p class="hero-subtitle animate-fadeInUp delay-1">
+                        From domains to designs, we've got everything your business needs to thrive in the digital world
+                    </p>
+                    <div class="hero-buttons animate-fadeInUp delay-2">
+                        <a href="{{ url_for('services') }}" class="btn btn-primary btn-large">
+                            <i class="fas fa-rocket"></i> Explore Services
+                        </a>
+                        <a href="#contact" class="btn btn-outline btn-large">
+                            <i class="fas fa-comments"></i> Get Quote
+                        </a>
+                    </div>
+                </div>
+                <div class="hero-image animate-fadeInRight">
+                    <div class="floating-card">
+                        <i class="fas fa-globe"></i>
+                        <span>500+ Websites</span>
+                    </div>
+                    <div class="floating-card floating-card-2">
+                        <i class="fas fa-paint-brush"></i>
+                        <span>1000+ Logos</span>
+                    </div>
+                    <div class="floating-card floating-card-3">
+                        <i class="fas fa-users"></i>
+                        <span>Happy Clients</span>
+                    </div>
+                </div>
+            </div>
+            
             <!-- Trust Indicators -->
-            <div class="trust-badges">
+            <div class="trust-badges animate-fadeInUp delay-3">
                 <div class="badge">
-                    <i class="fas fa-users"></i>
-                    <span>500+ Happy Clients</span>
+                    <div class="badge-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="badge-text">
+                        <span class="badge-number">500+</span>
+                        <span class="badge-label">Happy Clients</span>
+                    </div>
                 </div>
                 <div class="badge">
-                    <i class="fas fa-project-diagram"></i>
-                    <span>1000+ Projects Completed</span>
+                    <div class="badge-icon">
+                        <i class="fas fa-project-diagram"></i>
+                    </div>
+                    <div class="badge-text">
+                        <span class="badge-number">1000+</span>
+                        <span class="badge-label">Projects Completed</span>
+                    </div>
                 </div>
                 <div class="badge">
-                    <i class="fas fa-clock"></i>
-                    <span>24/7 Support</span>
+                    <div class="badge-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="badge-text">
+                        <span class="badge-number">24/7</span>
+                        <span class="badge-label">Support</span>
+                    </div>
+                </div>
+                <div class="badge">
+                    <div class="badge-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <div class="badge-text">
+                        <span class="badge-number">100%</span>
+                        <span class="badge-label">Secure</span>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    {% with messages = get_flashed_messages(with_categories=true) %}
-        {% if messages %}
-            {% for category, message in messages %}
-            <div class="alert alert-{{ category }}">
-                {{ message }}
-                <button class="alert-close">×</button>
-            </div>
-            {% endfor %}
-        {% endif %}
-    {% endwith %}
-
-    <section class="services-preview">
+    <!-- Customer Reviews Section -->
+    {% if reviews %}
+    <section class="reviews-section">
         <div class="container">
-            <h2 class="section-title">Our Services</h2>
-            <p class="section-subtitle">Comprehensive digital solutions tailored to your business needs</p>
-            <div class="services-grid">
-                {% for service_id, service in services.items() %}
-                <div class="service-card">
-                    <div class="service-icon">
-                        {% if 'email' in service_id %}
-                            📧
-                        {% elif 'domain' in service_id %}
-                            🌐
-                        {% elif 'website' in service_id %}
-                            💻
-                        {% elif 'card' in service_id %}
-                            🎴
-                        {% elif 'logo' in service_id %}
-                            🎨
-                        {% elif 'bot' in service_id %}
-                            🤖
-                        {% elif 'app' in service_id %}
-                            📱
-                        {% else %}
-                            ⚡
-                        {% endif %}
+            <h2 class="section-title">What Our Clients Say</h2>
+            <div class="reviews-slider">
+                {% for review in reviews %}
+                <div class="review-card">
+                    <div class="review-header">
+                        <div class="review-rating">
+                            {% for i in range(review.rating) %}
+                            <i class="fas fa-star"></i>
+                            {% endfor %}
+                            {% for i in range(5 - review.rating) %}
+                            <i class="far fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <h4>{{ review.customer_name }}</h4>
+                        <span class="review-service">{{ review.service }}</span>
                     </div>
-                    <h3>{{ service.name }}</h3>
-                    <p>{{ service.description }}</p>
-                    <p class="price">${{ "%.2f"|format(service.price) }}</p>
-                    <div class="service-features">
-                        <span class="feature-tag"><i class="fas fa-check"></i> Fast Delivery</span>
-                        <span class="feature-tag"><i class="fas fa-check"></i> Quality Assured</span>
+                    <p class="review-text">{{ review.review_text }}</p>
+                    <div class="review-date">
+                        <i class="fas fa-calendar"></i> {{ review.created_at.strftime('%B %d, %Y') }}
                     </div>
-                    <a href="{{ url_for('order', service_id=service_id) }}" class="btn btn-secondary">Order Now</a>
                 </div>
                 {% endfor %}
             </div>
         </div>
     </section>
+    {% endif %}
+
+    <section class="services-preview">
+        <div class="container">
+            <div class="section-header">
+                <h2 class="section-title">Our Premium Services</h2>
+                <p class="section-subtitle">Comprehensive digital solutions tailored to transform your business</p>
+            </div>
+            
+            <!-- Service Categories Filter -->
+            <div class="service-categories">
+                <button class="category-btn active" data-category="all">
+                    <i class="fas fa-th"></i> All Services
+                </button>
+                <button class="category-btn" data-category="web">
+                    <i class="fas fa-code"></i> Web Development
+                </button>
+                <button class="category-btn" data-category="design">
+                    <i class="fas fa-palette"></i> Design
+                </button>
+                <button class="category-btn" data-category="hosting">
+                    <i class="fas fa-server"></i> Hosting & Domains
+                </button>
+            </div>
+
+            <div class="services-grid">
+                {% for service_id, service in services.items() %}
+                <div class="service-card" data-category="{{ service.category }}">
+                    <div class="service-header">
+                        <div class="service-icon">
+                            {% if 'email' in service_id %}
+                                <i class="fas fa-envelope"></i>
+                            {% elif 'domain' in service_id %}
+                                <i class="fas fa-globe"></i>
+                            {% elif 'website' in service_id %}
+                                <i class="fas fa-laptop-code"></i>
+                            {% elif 'card' in service_id %}
+                                <i class="fas fa-id-card"></i>
+                            {% elif 'logo' in service_id %}
+                                <i class="fas fa-paint-brush"></i>
+                            {% elif 'bot' in service_id %}
+                                <i class="fas fa-robot"></i>
+                            {% elif 'app' in service_id %}
+                                <i class="fas fa-mobile-alt"></i>
+                            {% else %}
+                                <i class="fas fa-bolt"></i>
+                            {% endif %}
+                        </div>
+                        <div class="service-badge">
+                            {% if service.price == 0 %}
+                                <span class="badge-custom">Custom Quote</span>
+                            {% else %}
+                                <span class="badge-new">Popular</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="service-content">
+                        <h3>{{ service.name }}</h3>
+                        <p class="service-description">{{ service.description }}</p>
+                        
+                        {% if service.features %}
+                        <div class="service-features">
+                            {% for feature in service.features[:3] %}
+                            <span class="feature-tag">
+                                <i class="fas fa-check-circle"></i> {{ feature }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="service-meta">
+                            <div class="service-price">
+                                {% if service.price == 0 %}
+                                    <span class="price-custom">Custom</span>
+                                {% else %}
+                                    <span class="price-amount">${{ "%.2f"|format(service.price) }}</span>
+                                {% endif %}
+                            </div>
+                            <div class="service-delivery">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ service.get('delivery_time', 'Fast Delivery') }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="service-footer">
+                        <a href="{{ url_for('order', service_id=service_id) }}" class="btn btn-primary btn-block">
+                            <i class="fas fa-shopping-cart"></i> Order Now
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <div class="services-cta">
+                <div class="cta-content">
+                    <h3>Need a Custom Solution?</h3>
+                    <p>We offer tailored services to meet your unique business requirements</p>
+                    <a href="#contact" class="btn btn-outline btn-large">
+                        <i class="fas fa-comments"></i> Discuss Your Project
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Recent Projects Showcase -->
+    {% if recent_orders %}
+    <section class="recent-projects">
+        <div class="container">
+            <h2 class="section-title">Recently Completed Projects</h2>
+            <div class="projects-grid">
+                {% for order in recent_orders[:6] %}
+                <div class="project-card">
+                    <div class="project-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="project-content">
+                        <h4>{{ order.service }}</h4>
+                        <p>{{ order.customer_name }}</p>
+                        <div class="project-meta">
+                            <span class="tracking-number">{{ order.tracking_number }}</span>
+                            <span class="completion-date">
+                                <i class="fas fa-calendar-check"></i>
+                                {{ order.completed_date.strftime('%b %d, %Y') if order.completed_date else 'Recently' }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% endif %}
 
     <section class="features">
         <div class="container">
             <h2 class="section-title">Why Choose Ntandostore?</h2>
+            <p class="section-subtitle">Experience the difference with our premium services and dedicated support</p>
+            
             <div class="features-grid">
-                <div class="feature">
-                    <div class="feature-icon">✓</div>
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">
+                            <i class="fas fa-award"></i>
+                        </div>
+                    </div>
                     <h3>Professional Quality</h3>
-                    <p>Top-notch service for all your business needs</p>
+                    <p>Top-notch service delivered by experienced professionals who understand your business needs</p>
+                    <div class="feature-stats">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Client Satisfaction</span>
+                    </div>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">⚡</div>
-                    <h3>Fast Delivery</h3>
-                    <p>Quick turnaround times without compromising quality</p>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">
+                            <i class="fas fa-tachometer-alt"></i>
+                        </div>
+                    </div>
+                    <h3>Lightning Fast Delivery</h3>
+                    <p>Quick turnaround times without compromising on quality. Get your project completed in record time</p>
+                    <div class="feature-stats">
+                        <span class="stat-number">24-48h</span>
+                        <span class="stat-label">Average Delivery</span>
+                    </div>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">💰</div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                    </div>
                     <h3>Affordable Pricing</h3>
-                    <p>Competitive rates for all services</p>
+                    <p>Competitive rates that fit your budget without hidden charges or surprises</p>
+                    <div class="feature-stats">
+                        <span class="stat-number">30%</span>
+                        <span class="stat-label">Below Market Rate</span>
+                    </div>
                 </div>
-                <div class="feature">
-                    <div class="feature-icon">🛡️</div>
+                
+                <div class="feature-card">
+                    <div class="feature-icon-wrapper">
+                        <div class="feature-icon">
+                            <i class="fas fa-shield-alt"></i>
+                        </div>
+                    </div>
                     <h3>Secure & Reliable</h3>
-                    <p>Your data and business are in safe hands</p>
+                    <p>Your data and business are protected with enterprise-grade security and reliable infrastructure</p>
+                    <div class="feature-stats">
+                        <span class="stat-number">99.9%</span>
+                        <span class="stat-label">Uptime Guaranteed</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process-section">
+        <div class="container">
+            <h2 class="section-title">How It Works</h2>
+            <p class="section-subtitle">Get your project completed in 4 simple steps</p>
+            
+            <div class="process-timeline">
+                <div class="process-step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <i class="fas fa-search"></i>
+                        <h3>Choose Service</h3>
+                        <p>Select the service that best fits your needs from our comprehensive portfolio</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <i class="fas fa-edit"></i>
+                        <h3>Submit Details</h3>
+                        <p>Provide your project details and requirements through our easy order form</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <i class="fas fa-credit-card"></i>
+                        <h3>Make Payment</h3>
+                        <p>Complete payment using EcoCash or Innbucks. Simple, fast, and secure</p>
+                    </div>
+                </div>
+                
+                <div class="process-step">
+                    <div class="step-number">4</div>
+                    <div class="step-content">
+                        <i class="fas fa-rocket"></i>
+                        <h3>Get Delivered</h3>
+                        <p>Receive your completed project with tracking and support included</p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -155,11 +448,17 @@
     <section class="newsletter">
         <div class="container">
             <div class="newsletter-content">
-                <h2>Stay Updated</h2>
-                <p>Subscribe to our newsletter for exclusive offers and updates</p>
+                <div class="newsletter-text">
+                    <h2><i class="fas fa-bell"></i> Stay Updated</h2>
+                    <p>Subscribe to our newsletter for exclusive offers, new services, and business tips</p>
+                </div>
                 <form action="{{ url_for('subscribe') }}" method="POST" class="newsletter-form">
-                    <input type="email" name="email" placeholder="Enter your email" required>
-                    <button type="submit" class="btn btn-primary">Subscribe</button>
+                    <div class="form-group">
+                        <input type="email" name="email" placeholder="Enter your email address" required>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Subscribe
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -170,80 +469,82 @@
         <div class="container">
             <h2 class="section-title">Terms & Conditions</h2>
             <div class="terms-content">
-                <div class="terms-box">
-                    <h3><i class="fas fa-file-contract"></i> Service Agreement</h3>
-                    <ul>
-                        <li><strong>Payment:</strong> Full payment required before project commencement unless otherwise agreed.</li>
-                        <li><strong>Delivery:</strong> Estimated delivery times are provided in good faith. Delays due to client feedback or external factors may extend timelines.</li>
-                        <li><strong>Revisions:</strong> Each service includes specified revisions. Additional revisions may incur extra charges.</li>
-                    </ul>
-                </div>
+                <div class="terms-grid">
+                    <div class="terms-box">
+                        <h3><i class="fas fa-file-contract"></i> Service Agreement</h3>
+                        <ul>
+                            <li><strong>Payment:</strong> Full payment required before project commencement unless otherwise agreed.</li>
+                            <li><strong>Delivery:</strong> Estimated delivery times are provided in good faith. Delays due to client feedback may extend timelines.</li>
+                            <li><strong>Revisions:</strong> Each service includes specified revisions. Additional revisions may incur extra charges.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-shield-alt"></i> Refund & Cancellation Policy</h3>
-                    <ul>
-                        <li><strong>Refunds:</strong> Available within 48 hours of order placement if work has not commenced.</li>
-                        <li><strong>Cancellation:</strong> Once project begins, cancellation fee of 30% applies.</li>
-                        <li><strong>Satisfaction Guarantee:</strong> We work with you until you're satisfied within agreed revision limits.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-shield-alt"></i> Refund & Cancellation Policy</h3>
+                        <ul>
+                            <li><strong>Refunds:</strong> Available within 48 hours of order placement if work has not commenced.</li>
+                            <li><strong>Cancellation:</strong> Once project begins, cancellation fee of 30% applies.</li>
+                            <li><strong>Satisfaction Guarantee:</strong> We work with you until you're satisfied within agreed revision limits.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-copyright"></i> Intellectual Property</h3>
-                    <ul>
-                        <li><strong>Ownership:</strong> Upon full payment, client owns all deliverables.</li>
-                        <li><strong>Portfolio Rights:</strong> Ntandostore reserves the right to showcase completed work in portfolio.</li>
-                        <li><strong>Confidentiality:</strong> All client information is kept strictly confidential.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-copyright"></i> Intellectual Property</h3>
+                        <ul>
+                            <li><strong>Ownership:</strong> Upon full payment, client owns all deliverables.</li>
+                            <li><strong>Portfolio Rights:</strong> Ntandostore reserves the right to showcase completed work in portfolio.</li>
+                            <li><strong>Confidentiality:</strong> All client information is kept strictly confidential.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-user-shield"></i> Client Responsibilities</h3>
-                    <ul>
-                        <li><strong>Content:</strong> Client must provide accurate content, images, and information.</li>
-                        <li><strong>Feedback:</strong> Timely feedback required to maintain project timeline.</li>
-                        <li><strong>Hosting/Domain:</strong> Client responsible for annual renewal fees for domains and hosting.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-user-shield"></i> Client Responsibilities</h3>
+                        <ul>
+                            <li><strong>Content:</strong> Client must provide accurate content, images, and information.</li>
+                            <li><strong>Feedback:</strong> Timely feedback required to maintain project timeline.</li>
+                            <li><strong>Hosting/Domain:</strong> Client responsible for annual renewal fees for domains and hosting.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-hands-helping"></i> Support & Maintenance</h3>
-                    <ul>
-                        <li><strong>Warranty:</strong> 30-day bug-fix warranty on all custom development.</li>
-                        <li><strong>Support:</strong> Free email support for 30 days post-delivery.</li>
-                        <li><strong>Updates:</strong> Ongoing maintenance packages available separately.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-hands-helping"></i> Support & Maintenance</h3>
+                        <ul>
+                            <li><strong>Warranty:</strong> 30-day bug-fix warranty on all custom development.</li>
+                            <li><strong>Support:</strong> Free email support for 30 days post-delivery.</li>
+                            <li><strong>Updates:</strong> Ongoing maintenance packages available separately.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-exclamation-triangle"></i> Limitation of Liability</h3>
-                    <ul>
-                        <li>Ntandostore is not liable for any indirect, incidental, or consequential damages.</li>
-                        <li>Third-party service interruptions (hosting, domains) are beyond our control.</li>
-                        <li>Client responsible for backing up their own data and content.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-exclamation-triangle"></i> Limitation of Liability</h3>
+                        <ul>
+                            <li>Ntandostore is not liable for any indirect, incidental, or consequential damages.</li>
+                            <li>Third-party service interruptions (hosting, domains) are beyond our control.</li>
+                            <li>Client responsible for backing up their own data and content.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-gavel"></i> Dispute Resolution</h3>
-                    <ul>
-                        <li>Good faith negotiations will be attempted for any disputes.</li>
-                        <li>Disputes will be governed by the laws of Zimbabwe.</li>
-                        <li>Communication records via WhatsApp and email serve as proof of agreement.</li>
-                    </ul>
-                </div>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-gavel"></i> Dispute Resolution</h3>
+                        <ul>
+                            <li>Good faith negotiations will be attempted for any disputes.</li>
+                            <li>Disputes will be governed by the laws of Zimbabwe.</li>
+                            <li>Communication records via WhatsApp and email serve as proof of agreement.</li>
+                        </ul>
+                    </div>
 
-                <div class="terms-box">
-                    <h3><i class="fas fa-sync-alt"></i> Changes to Terms</h3>
-                    <ul>
-                        <li>Ntandostore reserves the right to update these terms at any time.</li>
-                        <li>Clients will be notified of significant changes via email.</li>
-                        <li>Continued use of services constitutes acceptance of updated terms.</li>
-                    </ul>
+                    <div class="terms-box">
+                        <h3><i class="fas fa-sync-alt"></i> Changes to Terms</h3>
+                        <ul>
+                            <li>Ntandostore reserves the right to update these terms at any time.</li>
+                            <li>Clients will be notified of significant changes via email.</li>
+                            <li>Continued use of services constitutes acceptance of updated terms.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             <div class="terms-footer">
-                <p><strong>Last Updated:</strong> November 2024</p>
+                <p><strong>Last Updated:</strong> {{ moment().format('MMMM YYYY') }}</p>
                 <p>By placing an order, you acknowledge that you have read, understood, and agree to these Terms & Conditions.</p>
                 <a href="{{ url_for('terms_pdf') }}" class="btn btn-outline" download>
                     <i class="fas fa-download"></i> Download Terms (PDF)
@@ -255,20 +556,26 @@
     <section id="contact" class="contact">
         <div class="container">
             <h2 class="section-title">Get In Touch</h2>
-            <p class="section-subtitle">Ready to start your project? We're here to help!</p>
+            <p class="section-subtitle">Ready to start your project? We're here to help you succeed!</p>
             
             <!-- Contact Form -->
             <div class="contact-wrapper">
                 <div class="contact-form-container">
                     <form action="{{ url_for('contact_submit') }}" method="POST" class="contact-form">
-                        <div class="form-group">
-                            <input type="text" name="name" placeholder="Your Name" required>
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="name"><i class="fas fa-user"></i> Your Name</label>
+                                <input type="text" id="name" name="name" placeholder="Enter your full name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="email"><i class="fas fa-envelope"></i> Your Email</label>
+                                <input type="email" id="email" name="email" placeholder="Enter your email address" required>
+                            </div>
                         </div>
                         <div class="form-group">
-                            <input type="email" name="email" placeholder="Your Email" required>
-                        </div>
-                        <div class="form-group">
-                            <select name="service" required>
+                            <label for="service"><i class="fas fa-cogs"></i> Service Interest</label>
+                            <select id="service" name="service" required>
                                 <option value="">Select a Service</option>
                                 {% for service_id, service in services.items() %}
                                 <option value="{{ service_id }}">{{ service.name }}</option>
@@ -276,9 +583,12 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <textarea name="message" rows="5" placeholder="Tell us about your project..." required></textarea>
+                            <label for="message"><i class="fas fa-comment-dots"></i> Project Details</label>
+                            <textarea id="message" name="message" rows="5" placeholder="Tell us about your project and requirements..." required></textarea>
                         </div>
-                        <button type="submit" class="btn btn-primary">Send Message</button>
+                        <button type="submit" class="btn btn-primary btn-large">
+                            <i class="fas fa-paper-plane"></i> Send Message
+                        </button>
                     </form>
                 </div>
 
@@ -308,11 +618,14 @@
                         <div class="contact-icon">
                             <i class="fas fa-credit-card"></i>
                         </div>
-                        <h3>Payment</h3>
-                        <p>EcoCash/Innbucks: +263 78 683 1091</p>
-                        <div class="payment-methods">
-                            <span class="payment-badge">EcoCash</span>
-                            <span class="payment-badge">Innbucks</span>
+                        <h3>Payment Methods</h3>
+                        <p>EcoCash/Innbucks Available</p>
+                        <div class="payment-info">
+                            <span class="payment-number">+263 78 683 1091</span>
+                            <div class="payment-methods">
+                                <span class="payment-badge">EcoCash</span>
+                                <span class="payment-badge">Innbucks</span>
+                            </div>
                         </div>
                     </div>
                     <div class="contact-item">
@@ -320,9 +633,15 @@
                             <i class="fas fa-clock"></i>
                         </div>
                         <h3>Business Hours</h3>
-                        <p>Monday - Friday: 8:00 AM - 6:00 PM<br>
-                        Saturday: 9:00 AM - 4:00 PM<br>
-                        Sunday: Closed</p>
+                        <p>
+                            <strong>Monday - Friday:</strong> 8:00 AM - 6:00 PM<br>
+                            <strong>Saturday:</strong> 9:00 AM - 4:00 PM<br>
+                            <strong>Sunday:</strong> Closed
+                        </p>
+                        <div class="availability-status">
+                            <span class="status-dot online"></span>
+                            <span class="status-text">Available Now</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -331,10 +650,18 @@
             <div class="social-links">
                 <h3>Follow Us</h3>
                 <div class="social-icons">
-                    <a href="#" target="_blank" aria-label="Facebook"><i class="fab fa-facebook"></i></a>
-                    <a href="#" target="_blank" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
-                    <a href="#" target="_blank" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                    <a href="#" target="_blank" aria-label="LinkedIn"><i class="fab fa-linkedin"></i></a>
+                    <a href="#" target="_blank" aria-label="Facebook" class="social-icon">
+                        <i class="fab fa-facebook"></i>
+                    </a>
+                    <a href="#" target="_blank" aria-label="Twitter" class="social-icon">
+                        <i class="fab fa-twitter"></i>
+                    </a>
+                    <a href="#" target="_blank" aria-label="Instagram" class="social-icon">
+                        <i class="fab fa-instagram"></i>
+                    </a>
+                    <a href="#" target="_blank" aria-label="LinkedIn" class="social-icon">
+                        <i class="fab fa-linkedin"></i>
+                    </a>
                 </div>
             </div>
         </div>
@@ -344,39 +671,67 @@
         <div class="container">
             <div class="footer-content">
                 <div class="footer-section">
-                    <h4>Ntandostore</h4>
-                    <p>Your complete business solution provider. Quality services at affordable prices.</p>
+                    <div class="footer-logo">
+                        {% if company_logo %}
+                        <img src="{{ url_for('static', filename='uploads/company/' + company_logo.filename) }}" alt="Ntandostore">
+                        {% else %}
+                        <h3><i class="fas fa-store"></i> Ntandostore</h3>
+                        {% endif %}
+                    </div>
+                    <p>Your complete business solution provider. Quality services at affordable prices, built with passion by the Ntando Mods team.</p>
+                    <div class="footer-badges">
+                        <span class="badge">
+                            <i class="fas fa-award"></i> Trusted
+                        </span>
+                        <span class="badge">
+                            <i class="fas fa-shield-alt"></i> Secure
+                        </span>
+                    </div>
                 </div>
+                
                 <div class="footer-section">
                     <h4>Quick Links</h4>
                     <ul>
-                        <li><a href="{{ url_for('index') }}">Home</a></li>
-                        <li><a href="{{ url_for('services') }}">Services</a></li>
-                        <li><a href="{{ url_for('gallery') }}">Portfolio</a></li>
-                        <li><a href="#contact">Contact</a></li>
+                        <li><a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Home</a></li>
+                        <li><a href="{{ url_for('services') }}"><i class="fas fa-cogs"></i> Services</a></li>
+                        <li><a href="{{ url_for('gallery') }}"><i class="fas fa-images"></i> Portfolio</a></li>
+                        <li><a href="{{ url_for('testimonials') }}"><i class="fas fa-star"></i> Testimonials</a></li>
+                        <li><a href="{{ url_for('faq') }}"><i class="fas fa-question-circle"></i> FAQ</a></li>
                     </ul>
                 </div>
+                
                 <div class="footer-section">
-                    <h4>Legal</h4>
+                    <h4>Legal & Policies</h4>
                     <ul>
-                        <li><a href="#terms">Terms & Conditions</a></li>
-                        <li><a href="{{ url_for('privacy') }}">Privacy Policy</a></li>
-                        <li><a href="{{ url_for('refund') }}">Refund Policy</a></li>
+                        <li><a href="#terms"><i class="fas fa-file-contract"></i> Terms & Conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}"><i class="fas fa-user-shield"></i> Privacy Policy</a></li>
+                        <li><a href="{{ url_for('refund') }}"><i class="fas fa-undo"></i> Refund Policy</a></li>
                     </ul>
                 </div>
+                
                 <div class="footer-section">
-                    <h4>Services</h4>
+                    <h4>Popular Services</h4>
                     <ul>
-                        <li><a href="{{ url_for('services') }}#website">Website Design</a></li>
-                        <li><a href="{{ url_for('services') }}#logo">Logo Design</a></li>
-                        <li><a href="{{ url_for('services') }}#domain">Domain Registration</a></li>
-                        <li><a href="{{ url_for('services') }}#email">Email Hosting</a></li>
+                        <li><a href="{{ url_for('order', service_id='website_design') }}"><i class="fas fa-laptop-code"></i> Website Design</a></li>
+                        <li><a href="{{ url_for('order', service_id='business_logo') }}"><i class="fas fa-paint-brush"></i> Logo Design</a></li>
+                        <li><a href="{{ url_for('order', service_id='domain') }}"><i class="fas fa-globe"></i> Domain Registration</a></li>
+                        <li><a href="{{ url_for('order', service_id='business_email') }}"><i class="fas fa-envelope"></i> Email Hosting</a></li>
                     </ul>
                 </div>
             </div>
+            
             <div class="footer-bottom">
-                <p>© 2024 Ntandostore. All rights reserved.</p>
-                <p class="footer-tagline">Built with ❤️ in Zimbabwe</p>
+                <div class="footer-copyright">
+                    <p>© {{ moment().format('YYYY') }} Ntandostore. All rights reserved.</p>
+                    <p class="footer-tagline">
+                        <i class="fas fa-heart"></i> Built with passion by Ntando Mods Team in Zimbabwe
+                    </p>
+                </div>
+                <div class="footer-tech">
+                    <span class="tech-badge">
+                        <i class="fas fa-lock"></i> Secured by Ntando Mods
+                    </span>
+                </div>
             </div>
         </div>
     </footer>
@@ -386,30 +741,99 @@
         <i class="fas fa-arrow-up"></i>
     </button>
 
-    <!-- Live Chat Widget (Optional) -->
+    <!-- Live Chat Widget -->
     <div class="live-chat-button" id="liveChatBtn">
         <i class="fas fa-comments"></i>
-        <span>Chat with us</span>
+        <span class="chat-text">Chat with us</span>
+        <div class="chat-indicator">
+            <span class="pulse"></span>
+        </div>
+    </div>
+
+    <!-- Order Tracking Widget -->
+    <div class="tracking-widget" id="trackingWidget">
+        <button class="widget-toggle" id="trackingToggle">
+            <i class="fas fa-search"></i>
+        </button>
+        <div class="widget-content">
+            <h4>Track Your Order</h4>
+            <form id="trackingForm">
+                <input type="text" placeholder="Enter tracking number" id="trackingInput">
+                <button type="submit" class="btn btn-primary">Track</button>
+            </form>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='js/main.js') }}"></script>
     <script>
-        // Background Music Control
+        // Enhanced JavaScript functionality
         document.addEventListener('DOMContentLoaded', function() {
+            // Loading screen
+            setTimeout(function() {
+                const loadingScreen = document.getElementById('loadingScreen');
+                if (loadingScreen) {
+                    loadingScreen.style.opacity = '0';
+                    setTimeout(() => loadingScreen.style.display = 'none', 500);
+                }
+            }, 1500);
+
+            // Dark mode toggle
+            const themeToggle = document.getElementById('themeToggle');
+            const themeIcon = document.getElementById('themeIcon');
+            const body = document.body;
+            
+            // Check for saved theme preference
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                body.classList.add('dark-mode');
+                themeIcon.className = 'fas fa-sun';
+            }
+
+            themeToggle.addEventListener('click', function() {
+                body.classList.toggle('dark-mode');
+                const isDark = body.classList.contains('dark-mode');
+                themeIcon.className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+                localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            });
+
+            // Background Music Control
             const bgMusic = document.getElementById('bgMusic');
             const musicToggle = document.getElementById('musicToggle');
             let isPlaying = false;
 
-            musicToggle.addEventListener('click', function() {
-                if (isPlaying) {
-                    bgMusic.pause();
-                    musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
-                    isPlaying = false;
-                } else {
-                    bgMusic.play();
-                    musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
-                    isPlaying = true;
-                }
+            if (bgMusic && musicToggle) {
+                musicToggle.addEventListener('click', function() {
+                    if (isPlaying) {
+                        bgMusic.pause();
+                        musicToggle.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    } else {
+                        bgMusic.play().catch(e => console.log('Audio play failed:', e));
+                        musicToggle.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    }
+                    isPlaying = !isPlaying;
+                });
+            }
+
+            // Service category filtering
+            const categoryBtns = document.querySelectorAll('.category-btn');
+            const serviceCards = document.querySelectorAll('.service-card');
+
+            categoryBtns.forEach(btn => {
+                btn.addEventListener('click', function() {
+                    categoryBtns.forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    const category = this.dataset.category;
+                    
+                    serviceCards.forEach(card => {
+                        if (category === 'all' || card.dataset.category === category) {
+                            card.style.display = 'block';
+                            card.classList.add('animate-fadeIn');
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
             });
 
             // Scroll to Top
@@ -430,10 +854,12 @@
             const mobileMenuToggle = document.getElementById('mobileMenuToggle');
             const navMenu = document.querySelector('.nav-menu');
             
-            mobileMenuToggle.addEventListener('click', function() {
-                navMenu.classList.toggle('active');
-                this.classList.toggle('active');
-            });
+            if (mobileMenuToggle && navMenu) {
+                mobileMenuToggle.addEventListener('click', function() {
+                    navMenu.classList.toggle('active');
+                    this.classList.toggle('active');
+                });
+            }
 
             // Alert Close Button
             document.querySelectorAll('.alert-close').forEach(button => {
@@ -451,6 +877,54 @@
                         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     }
                 });
+            });
+
+            // Live chat functionality
+            const liveChatBtn = document.getElementById('liveChatBtn');
+            if (liveChatBtn) {
+                liveChatBtn.addEventListener('click', function() {
+                    // WhatsApp chat
+                    window.open('https://wa.me/263718456744', '_blank');
+                });
+            }
+
+            // Order tracking widget
+            const trackingToggle = document.getElementById('trackingToggle');
+            const trackingWidget = document.getElementById('trackingWidget');
+            const trackingForm = document.getElementById('trackingForm');
+
+            if (trackingToggle && trackingWidget) {
+                trackingToggle.addEventListener('click', function() {
+                    trackingWidget.classList.toggle('active');
+                });
+
+                if (trackingForm) {
+                    trackingForm.addEventListener('submit', function(e) {
+                        e.preventDefault();
+                        const trackingNumber = document.getElementById('trackingInput').value.trim();
+                        if (trackingNumber) {
+                            window.location.href = `/track/${trackingNumber}`;
+                        }
+                    });
+                }
+            }
+
+            // Add animations on scroll
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver(function(entries) {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('animate-fadeInUp');
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.service-card, .feature-card, .process-step').forEach(el => {
+                observer.observe(el);
             });
         });
     </script>
