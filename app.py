@@ -1,16 +1,11 @@
 from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
-from flask_wtf.csrf import CSRFProtect
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-from werkzeug.middleware.proxy_fix import ProxyFix
 import os
 from datetime import datetime, timedelta
 import secrets
 import re
-from PIL import Image
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
 import hashlib
 from functools import wraps
 import logging
@@ -18,22 +13,23 @@ from logging.handlers import RotatingFileHandler
 
 app = Flask(__name__)
 
-# Security middleware
-app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
-csrf = CSRFProtect(app)
+# Simple CSRF token generation (without Flask-WTF)
+def generate_csrf_token():
+    if 'csrf_token' not in session:
+        session['csrf_token'] = secrets.token_urlsafe(32)
+    return session['csrf_token']
 
-# Rate limiting
-limiter = Limiter(
-    app=app,
-    key_func=get_remote_address,
-    default_limits=["200 per day", "50 per hour"]
-)
+app.jinja_env.globals['csrf_token'] = generate_csrf_token
+
+def validate_csrf():
+    token = request.form.get('csrf_token') or request.headers.get('X-CSRF-Token')
+    if not token or token != session.get('csrf_token'):
+        flash('Security validation failed', 'error')
+        return False
+    return True
 
 # Configuration
 app.secret_key = os.environ.get('SECRET_KEY', secrets.token_hex(32))
-app.config['WTF_CSRF_TIME_LIMIT'] = None
-app.config['WTF_CSRF_ENABLED'] = True
-csrf_secret_key = os.environ.get('CSRF_SECRET_KEY', secrets.token_hex(32))
 
 # Database configuration - use PostgreSQL for production
 DATABASE_URL = os.environ.get('DATABASE_URL')
@@ -453,8 +449,9 @@ def order(service_id):
                              company_logo=None)
 
 @app.route('/submit_order', methods=['POST'])
-@limiter.limit("10 per minute")
 def submit_order():
+    if not validate_csrf():
+        return redirect(url_for('index'))
     try:
         # Get and validate form data
         service_id = sanitize_input(request.form.get('service_id'))
@@ -522,8 +519,9 @@ def submit_order():
         return redirect(url_for('index'))
 
 @app.route('/contact', methods=['POST'])
-@limiter.limit("5 per minute")
 def contact_submit():
+    if not validate_csrf():
+        return redirect(url_for('index'))
     try:
         name = sanitize_input(request.form.get('name'))
         email = sanitize_input(request.form.get('email'))
@@ -577,8 +575,9 @@ def contact_submit():
         return redirect(url_for('index') + '#contact')
 
 @app.route('/subscribe', methods=['POST'])
-@limiter.limit("3 per minute")
 def subscribe():
+    if not validate_csrf():
+        return redirect(url_for('index'))
     try:
         email = sanitize_input(request.form.get('email'))
         
@@ -647,7 +646,6 @@ def track_order(tracking_number):
 
 # Admin Routes
 @app.route('/admin/login', methods=['GET', 'POST'])
-@limiter.limit("5 per minute")
 def admin_login():
     if request.method == 'POST':
         try:
@@ -933,40 +931,50 @@ def internal_error(error):
     company_logo = CompanyLogo.query.filter_by(is_active=True).first()
     return render_template('500.html', company_logo=company_logo), 500
 
-@app.errorhandler(429)
-def ratelimit_handler(e):
-    flash('Too many requests. Please try again later.', 'error')
-    return redirect(url_for('index'))
+
 
 # Initialize database
 def init_db():
     """Initialize database tables and create default admin"""
     with app.app_context():
         try:
-            print("Creating database tables...")
-            db.create_all()
-            print("✓ Database tables created")
+            # Import here to avoid circular imports
+            from sqlalchemy import inspect
+            
+            inspector = inspect(db.engine)
+            existing_tables = inspector.get_table_names()
+            
+            if not existing_tables:
+                print("Creating database tables...")
+                db.create_all()
+                print("✓ Database tables created")
+            else:
+                print("✓ Database tables already exist")
             
             # Create default admin if not exists
-            admin = Admin.query.filter_by(username='Ntando').first()
-            if not admin:
-                hashed_password = generate_password_hash('Ntando')
-                admin = Admin(
-                    username='Ntando',
-                    password=hashed_password,
-                    email='admin@ntandostore.com'
-                )
-                db.session.add(admin)
-                db.session.commit()
-                print("✓ Default admin created: username=Ntando, password=Ntando")
-            else:
-                print("✓ Admin already exists")
+            try:
+                admin = Admin.query.filter_by(username='Ntando').first()
+                if not admin:
+                    hashed_password = generate_password_hash('Ntando')
+                    admin = Admin(
+                        username='Ntando',
+                        password=hashed_password,
+                        email='admin@ntandostore.com'
+                    )
+                    db.session.add(admin)
+                    db.session.commit()
+                    print("✓ Default admin created: username=Ntando, password=Ntando")
+                else:
+                    print("✓ Admin already exists")
+            except Exception as admin_error:
+                print(f"⚠ Admin creation error: {admin_error}")
+                # Continue even if admin creation fails
                 
             print("✓ Database initialization completed")
             return True
         except Exception as e:
             print(f"✗ Database initialization error: {e}")
-            db.session.rollback()
+            # Don't rollback on initialization errors
             return False
 
 # Auto-initialize database on first request
@@ -975,16 +983,28 @@ def initialize_database():
     """Initialize database on first request"""
     if not hasattr(app, 'db_initialized'):
         try:
-            # Test if tables exist
-            db.session.execute(db.text('SELECT 1 FROM admin LIMIT 1'))
-            app.db_initialized = True
-        except:
-            # Tables don't exist, initialize them
-            print("Initializing database on first request...")
-            if init_db():
+            # Test if admin table exists
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            if 'admin' in inspector.get_table_names():
                 app.db_initialized = True
+            else:
+                # Tables don't exist, initialize them
+                print("Initializing database on first request...")
+                if init_db():
+                    app.db_initialized = True
+        except Exception as e:
+            print(f"Database check error: {e}")
+            app.db_initialized = True  # Don't keep trying
 
 if __name__ == '__main__':
     init_db()
     port = int(os.environ.get('PORT', 5000))
-    app.run(debug=False, host='0.0.0.0', port=port)
+    
+    # Create directories if they don't exist
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'logos'), exist_ok=True)
+    os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'company'), exist_ok=True)
+    os.makedirs('logs', exist_ok=True)
+    
+    # Run in production mode
+    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
