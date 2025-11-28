@@ -11,4 +11,3 @@ bcrypt==4.0.1
 cryptography==41.0.4
 gunicorn==21.2.0
 redis==4.6.0
-celery==5.3.2
