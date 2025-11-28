@@ -2,9 +2,10 @@ services:
   # Web Service
   - type: web
     name: ntandostore
-    env: docker
+    env: python
     plan: starter
-    dockerfilePath: ./Dockerfile
+    buildCommand: "chmod +x install.sh && ./install.sh"
+    startCommand: "python app.py"
     healthCheckPath: /health
     
     # Environment Variables
@@ -31,18 +32,18 @@ services:
     scaling:
       minInstances: 1
       maxInstances: 1
-      targetMemoryPercent: 80
-      targetCPUPercent: 80
+      targetMemoryPercent: 85
+      targetCPUPercent: 85
       
     # Health Check Configuration
     healthCheck:
       http:
         path: /health
         port: $PORT
-      initialDelaySeconds: 60
-      periodSeconds: 15
-      timeoutSeconds: 10
-      failureThreshold: 3
+      initialDelaySeconds: 120
+      periodSeconds: 30
+      timeoutSeconds: 30
+      failureThreshold: 5
 
   # PostgreSQL Database
   - type: pserv
