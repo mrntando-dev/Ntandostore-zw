@@ -49,18 +49,23 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max file size
 
-# Security headers
+# Security headers - compatible with both HTTP and HTTPS
 @app.after_request
 def security_headers(response):
     response.headers['X-Content-Type-Options'] = 'nosniff'
     response.headers['X-Frame-Options'] = 'DENY'
     response.headers['X-XSS-Protection'] = '1; mode=block'
-    response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
+    # Only add HSTS header if using HTTPS
+    if request.is_secure:
+        response.headers['Strict-Transport-Security'] = 'max-age=31536000; includeSubDomains'
+    
     response.headers['Content-Security-Policy'] = "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: https:; connect-src 'self'"
     return response
 
 # Session security
-app.config['SESSION_COOKIE_SECURE'] = True
+# Session security - compatible with both HTTP and HTTPS
+app.config['SESSION_COOKIE_SECURE'] = os.environ.get('FORCE_HTTPS', 'False').lower() == 'true'
 app.config['SESSION_COOKIE_HTTPONLY'] = True
 app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=2)
@@ -979,25 +984,46 @@ def init_db():
             # Don't rollback on initialization errors
             return False
 
-# Auto-initialize database on first request
-@app.before_request
-def initialize_database():
-    """Initialize database on first request"""
-    if not hasattr(app, 'db_initialized'):
-        try:
+# Initialize database on startup for deployment platforms
+def initialize_on_startup():
+    """Initialize database when app starts"""
+    try:
+        with app.app_context():
             # Test if admin table exists
             from sqlalchemy import inspect
             inspector = inspect(db.engine)
-            if 'admin' in inspector.get_table_names():
-                app.db_initialized = True
+            existing_tables = inspector.get_table_names()
+            
+            if not existing_tables or 'admin' not in existing_tables:
+                print("Initializing database on startup...")
+                init_db()
             else:
-                # Tables don't exist, initialize them
-                print("Initializing database on first request...")
-                if init_db():
-                    app.db_initialized = True
-        except Exception as e:
-            print(f"Database check error: {e}")
-            app.db_initialized = True  # Don't keep trying
+                print("✓ Database tables already exist")
+                
+                # Check if admin exists
+                admin = Admin.query.filter_by(username='Ntando').first()
+                if not admin:
+                    print("Creating default admin user...")
+                    hashed_password = generate_password_hash('Ntando')
+                    admin = Admin(
+                        username='Ntando',
+                        password=hashed_password,
+                        email='admin@ntandostore.com'
+                    )
+                    db.session.add(admin)
+                    db.session.commit()
+                    print("✓ Default admin created: username=Ntando, password=Ntando")
+                    
+    except Exception as e:
+        print(f"Database initialization error: {e}")
+
+# Auto-initialize database on first request (fallback)
+@app.before_request
+def initialize_database():
+    """Initialize database on first request if not already done"""
+    if not hasattr(app, 'db_initialized'):
+        initialize_on_startup()
+        app.db_initialized = True
 
 if __name__ == '__main__':
     init_db()
@@ -1008,5 +1034,6 @@ if __name__ == '__main__':
     os.makedirs(os.path.join(app.config['UPLOAD_FOLDER'], 'company'), exist_ok=True)
     os.makedirs('logs', exist_ok=True)
     
-    # Run in production mode
-    app.run(debug=False, host='0.0.0.0', port=port, threaded=True)
+    # Run in production mode for deployment platforms
+    debug_mode = os.environ.get('FLASK_ENV', 'production') != 'production'
+    app.run(debug=debug_mode, host='0.0.0.0', port=port, threaded=True)
