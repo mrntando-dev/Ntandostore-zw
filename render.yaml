@@ -1,20 +1,144 @@
 services:
+  # Web Service
   - type: web
     name: ntandostore
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    plan: starter
+    buildCommand: "pip install -r requirements.txt"
+    startCommand: "gunicorn app:app"
+    healthCheckPath: /health
+    
+    # Environment Variables
     envVars:
-      - key: PYTHON_VERSION
-        value: 3.11.0
+      - key: FLASK_ENV
+        value: production
       - key: SECRET_KEY
         generateValue: true
-      - key: DATABASE_URL
-        fromDatabase:
-          name: ntandostore-db
-          property: connectionString
+      - key: CSRF_SECRET_KEY
+        generateValue: true
+      - key: PYTHON_VERSION
+        value: 3.11.0
+        
+    # Build Configuration
+    build:
+      baseImage: python:3.11-slim
+      
+    # Auto-Deploy Configuration
+    autoDeploy: false
+    
+    # Scaling Configuration
+    scaling:
+      minInstances: 1
+      maxInstances: 3
+      targetMemoryPercent: 75
+      targetCPUPercent: 75
+      
+    # Health Check Configuration
+    healthCheck:
+      http:
+        path: /health
+        port: 5000
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
 
-databases:
-  - name: ntando
-    databaseName: ntandostore
-    user: ntando_user
+  # PostgreSQL Database
+  - type: pserv
+    name: ntandostore-db
+    env: postgres
+    plan: starter
+    
+    # Database Configuration
+    databases:
+      - name: ntandostore
+        user: ntando
+        
+    # Backup Configuration
+    backupConfig:
+      backupHour: 2
+      backupMinute: 0
+      retentionDays: 30
+      
+    # Connection Details
+    connectionInfo:
+      host: ntandostore-db
+      port: 5432
+
+  # Redis for Sessions and Caching
+  - type: pserv
+    name: ntandostore-redis
+    env: redis
+    plan: starter
+    
+    # Redis Configuration
+    config:
+      maxmemory: 256mb
+      maxmemory-policy: allkeys-lru
+
+# Application Configuration
+version: "1.0"
+
+# Metadata
+metadata:
+  name: Ntandostore - Business Solutions Platform
+  description: Complete business solution platform offering website design, logo design, domain registration, hosting, and digital services
+  author: Ntando Mods Team
+  
+# Deployment Hooks
+hooks:
+  # Pre-build hook
+  preBuild:
+    commands:
+      - echo "Starting deployment process..."
+      - python --version
+      
+  # Post-build hook
+  postBuild:
+    commands:
+      - echo "Build completed successfully"
+      - ls -la static/
+      
+  # Pre-deploy hook
+  preDeploy:
+    commands:
+      - echo "Initializing database..."
+      - python -c "from app import init_db; init_db()"
+      
+  # Post-deploy hook
+  postDeploy:
+    commands:
+      - echo "Deployment completed successfully"
+      - curl -f http://localhost:5000/health || exit 1
+
+# Notification Configuration
+notifications:
+  email:
+    enabled: false
+    
+# Custom Domains (to be configured after deployment)
+domains:
+  - domain: ntandostore.onrender.com
+    type: primary
+
+# Security Configuration
+security:
+  sslEnabled: true
+  allowedMethods:
+    - GET
+    - POST
+    - PUT
+    - DELETE
+    - OPTIONS
+  allowedHeaders:
+    - Content-Type
+    - Authorization
+    - X-CSRF-Token
+  exposedHeaders:
+    - X-Total-Count
+
+# Performance Configuration
+performance:
+  cachingEnabled: true
+  compressionEnabled: true
+  minificationEnabled: true
